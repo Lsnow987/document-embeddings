@@ -1,37 +1,72 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import codecs
+import os
+import pandas as pd
 
 
-def read_document(text):
-    # each paragraph is a seperate document? prob - cuz many are very long
-    
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {text}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-def read_paragraph(text):
-    #which number paragraph of which doc
-    #text and make some embedding
+class Document:
+    def __init__(self, title, doc_num, paragraphs):
+        self.title = title
+        self.doc_num = doc_num
+        self.paragraphs = paragraphs
 
 
-# Press the green button in the gutter to run the script.
-# f = open("C:/Users/ysnow/OneDrive/Desktop/summer/responsa_for_research/0000000", "rb")
-# print(f.read())
-# text = f.read()
-# text1 = text.decode("iso-8859-8")
-# print("\n")
-# print(text1)
-# text2 = text.decode("cp1255")
-# print("\n")
-# print(text2)
-# text3 = text.decode("cp862")
-# print("\n")
-# print(text3)
-# print_file('PyCharm')
-encoding = "cp1255"
-f = codecs.open("C:/Users/ysnow/OneDrive/Desktop/summer/responsa_for_research/0000000", "r", encoding)
-print(f.read())
+class Paragraph:
+    def __init__(self, paragraph, paragraph_num, doc_num, length):  # need this second docnum
+        self.paragraph_num = paragraph_num
+        self.doc_num = doc_num
+        self.paragraph = paragraph
+        self.length = length
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def to_dict(self):
+        return {
+            'paragraph_num': self.paragraph_num,
+            'doc_num': self.doc_num,
+            'paragraph': self.paragraph,
+            'length': self.length,
+        }
+
+
+def read_document(full_text, doc_name):
+    text_array = full_text.split("@")
+    # print(text_array)
+    paragraph_count = 1
+    title = ""
+    paragraph_list = list()
+    for paragraph in text_array:
+        if paragraph_count == 1:
+            title = paragraph.split("\r\n", 1)[:1]
+            # print(title)
+        p = read_paragraph(paragraph, paragraph_count, doc_name)
+        paragraph_list.append(p)
+        paragraph_count += 1
+    all_docs = Document(title, doc_name, paragraph_list)
+    pgraphs.append([s.to_dict() for s in paragraph_list])
+    return all_docs
+
+
+def read_paragraph(paragraph, paragraph_count, doc_name):
+    # print("\n new line - paragraph \n")
+    # print(paragraph)
+    length = len(paragraph)
+    p1 = Paragraph(paragraph, paragraph_count, doc_name, length)
+    return p1
+
+
+# which number paragraph of which doc
+# text and make some embedding
+
+pgraphs = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
+
+arr = os.listdir("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/")
+all_documents = list()
+for x in arr:
+    f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
+    text = f.read()
+    text = text.decode("cp1255")
+    # print(text)
+    # print("\n new line - main\n")
+    doc = read_document(text, x)
+    all_documents.append(doc)
+    if x == "0001000":
+        break
+
+print(pgraphs.size)
