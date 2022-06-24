@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-
+import sys
 
 class Document:
     def __init__(self, title, doc_num, paragraphs):
@@ -26,6 +26,7 @@ class Paragraph:
 
 
 def read_document(full_text, doc_name):
+    # pgraphs = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
     text_array = full_text.split("@")
     # print(text_array)
     paragraph_count = 1
@@ -34,13 +35,22 @@ def read_document(full_text, doc_name):
     for paragraph in text_array:
         if paragraph_count == 1:
             title = paragraph.split("\r\n", 1)[:1]
+            paragraph = paragraph.split("\r\n", 1)[1:]
+            # if len(paragraph) < 5:
+            #     continue
+            # print(paragraph)
+            # sys.exit()
             # print(title)
         p = read_paragraph(paragraph, paragraph_count, doc_name)
         paragraph_list.append(p)
         paragraph_count += 1
-    all_docs = Document(title, doc_name, paragraph_list)
-    pgraphs.append([s.to_dict() for s in paragraph_list])
-    return all_docs
+    docu = Document(title, doc_name, paragraph_list)
+    temp = pd.concat([pd.Series(s.to_dict()) for s in paragraph_list], axis=1)
+    # print (temp)
+    # sys.exit()
+    # pgraphs = pd.concat([pgraphs, temp])
+    info = [docu, temp]
+    return info
 
 
 def read_paragraph(paragraph, paragraph_count, doc_name):
@@ -54,19 +64,26 @@ def read_paragraph(paragraph, paragraph_count, doc_name):
 # which number paragraph of which doc
 # text and make some embedding
 
-pgraphs = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
 
 arr = os.listdir("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/")
 all_documents = list()
+full_graph = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
 for x in arr:
     f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
     text = f.read()
     text = text.decode("cp1255")
     # print(text)
     # print("\n new line - main\n")
-    doc = read_document(text, x)
+    info = read_document(text, x)
+    doc = info[0]
+    pgraph = info[1]
     all_documents.append(doc)
+    # full_graph.append(pgraph)
+    full_graph = pd.concat([pgraph, full_graph], axis = 1)
     if x == "0001000":
         break
 
-print(pgraphs.size)
+print(full_graph)
+# print(full_graph.head(100))
+full_graph.to_csv("ex.csv").encode("utf-8")
+# print(full_graph.columns.tolist())
