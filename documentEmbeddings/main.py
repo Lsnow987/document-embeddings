@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import sys
 
+
 class Document:
     def __init__(self, title, doc_num, paragraphs):
         self.title = title
@@ -36,11 +37,12 @@ def read_document(full_text, doc_name):
         if paragraph_count == 1:
             title = paragraph.split("\r\n", 1)[:1]
             paragraph = paragraph.split("\r\n", 1)[1:]
-            # if len(paragraph) < 5:
+            #
             #     continue
             # print(paragraph)
             # sys.exit()
             # print(title)
+        # if len(paragraph) > 5:
         p = read_paragraph(paragraph, paragraph_count, doc_name)
         paragraph_list.append(p)
         paragraph_count += 1
@@ -49,8 +51,8 @@ def read_document(full_text, doc_name):
     # print (temp)
     # sys.exit()
     # pgraphs = pd.concat([pgraphs, temp])
-    info = [docu, temp]
-    return info
+    informat = [docu, temp]
+    return informat
 
 
 def read_paragraph(paragraph, paragraph_count, doc_name):
@@ -79,11 +81,11 @@ for x in arr:
     pgraph = info[1]
     all_documents.append(doc)
     # full_graph.append(pgraph)
-    full_graph = pd.concat([pgraph, full_graph], axis = 1)
+    full_graph = pd.concat([pgraph, full_graph], axis=1)
     if x == "0001000":
         break
 
 print(full_graph)
 # print(full_graph.head(100))
-full_graph.to_csv("ex.csv").encode("utf-8")
+full_graph.to_csv("ex.csv")
 # print(full_graph.columns.tolist())
