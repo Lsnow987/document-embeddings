@@ -103,5 +103,9 @@ pgraph = pd.concat([pd.Series(a.to_dict()) for s in all_the_paragraphs for a in 
 full_graph = pd.concat([pgraph, full_graph], axis=1)
 doc_full_graph = pd.concat([doc_pgraph, doc_full_graph], axis=1)
 # print(doc_full_graph)
-doc_full_graph.to_csv("docs.csv")
-full_graph.to_csv("paragraphs.csv")
+# doc_full_graph.to_csv("docs.csv")
+# full_graph.to_csv("paragraphs.csv")
+
+doc_pgraph.to_csv("docs.csv")
+
+pgraph.to_csv("paragraphs.csv")
