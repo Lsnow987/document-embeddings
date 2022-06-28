@@ -63,7 +63,7 @@ def read_document(full_text, doc_name):
         paragraph_count += 1
     docu = Document(title, doc_name, paragraph_list, length_of_doc)
 
-    temp = pd.concat([pd.Series(s.to_dict()) for s in paragraph_list], axis=1)
+    temp = paragraph_list #pd.concat([pd.Series(s.to_dict()) for s in paragraph_list], axis=1)
     informat = [docu, temp]
     return informat
 
@@ -80,6 +80,7 @@ all_documents = list()
 full_graph = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
 doc_full_graph = pd.DataFrame(columns=['title', 'doc_num', 'paragraphs', 'length'])
 all_the_docs = []
+all_the_paragraphs = []
 for x in arr:
     f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
     text = f.read()
@@ -87,16 +88,19 @@ for x in arr:
     info = read_document(text, x)
     doc = info[0]
     all_the_docs.append(doc)
-    pgraph = info[1]
+    all_the_paragraphs.append(info[1])
 
     doc_pgraph = None
     all_documents.append(doc)
 
-    full_graph = pd.concat([pgraph, full_graph], axis=1)
     if x == "0001000":
         break
 
+# full_graph = pd.concat([pgraph, full_graph], axis=1)
+
 doc_pgraph = pd.concat([pd.Series(s.to_dict()) for s in all_the_docs], axis=1)
+pgraph = pd.concat([pd.Series(a.to_dict()) for s in all_the_paragraphs for a in s], axis=1)
+full_graph = pd.concat([pgraph, full_graph], axis=1)
 doc_full_graph = pd.concat([doc_pgraph, doc_full_graph], axis=1)
 # print(doc_full_graph)
 doc_full_graph.to_csv("docs.csv")
