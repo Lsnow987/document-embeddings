@@ -43,49 +43,7 @@ class PriorityQueue(object):
             print()
             exit()
 
-
-class Document:
-    def __init__(self, title, doc_num, paragraphs, length):
-        self.title = title
-        self.doc_num = doc_num
-        self.paragraphs = paragraphs
-        self.length = length
-
-    def to_dict(self):
-        return {
-            'title': self.title,
-            'doc_num': self.doc_num,
-            'paragraphs': str(self.paragraphs),
-            'length': self.length,
-        }
-
-
-class Paragraph:
-    def __init__(self, paragraph, paragraph_num, doc_num, length):  # need this second docnum
-        self.paragraph_num = paragraph_num
-        self.doc_num = doc_num
-        self.paragraph = paragraph
-        self.length = length
-
-    def to_dict(self):
-        return {
-            'paragraph_num': self.paragraph_num,
-            'doc_num': self.doc_num,
-            'paragraph': self.paragraph,
-            'length': self.length,
-        }
-
-    def __str__(self):
-        return str({
-            'paragraph_num': self.paragraph_num,
-            'doc_num': self.doc_num,
-            'paragraph': self.paragraph,
-            'length': self.length,
-        })
-
-
 def read_document(full_text, doc_name):
-    # pgraphs = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
     length_of_doc = len(full_text)
     text_array = full_text.split("@")
     # print(text_array)
@@ -98,7 +56,6 @@ def read_document(full_text, doc_name):
             paragraph = paragraph.split("\r\n", 1)[1:]
         else:
             paragraph = paragraph.split("\r\n", 1)[:]
-            # leng = len(paragraph[0])
         if len(paragraph[0]) > 5:  # what number should this be to take out small paragraphs that don't mean anything
             p = read_paragraph(paragraph, paragraph_count, doc_name)
             paragraph_list.append(p)
@@ -122,15 +79,7 @@ class Manager:
     def __init__(self):
         file = 'C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/paragraphs.csv'
         self.df = pd.read_csv(file)
-        # file_exists = exists("C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/docs.csv")
-        # df = None
-        # if file_exists:
-        #     df = pd.read_csv('C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/docs.csv')
-        # else:
-        #     df = "a"
 
-        # id = which number model this is
-        # name = the name of the model
 
     def make_paragraph_and_doc_csv(self):
         arr = os.listdir("/home/jacob/code/responaProjectReccomender/Data/")
@@ -146,6 +95,15 @@ class Manager:
             f = open("/home/jacob/code/responaProjectReccomender/Data/" + x, "rb")
             text = f.read()
             text = text.decode("cp1255", errors="ignore")
+
+            
+
+
+
+
+
+
+
             info = read_document(text, x)
             doc = info[0]
             all_the_docs.append(doc)
@@ -245,4 +203,3 @@ class Manager:
 
 
 n = Manager()
-n.search(None, None, None)
