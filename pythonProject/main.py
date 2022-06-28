@@ -74,7 +74,7 @@ def read_paragraph(paragraph, paragraph_count, doc_name):
     return p1
 
 
-arr = os.listdir("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/")
+arr = os.listdir("/home/jacob/code/responaProjectReccomender/Data/")
 all_documents = list()
 
 count = 1
@@ -84,7 +84,7 @@ doc_full_graph = pd.DataFrame(columns=['title', 'doc_num', 'paragraphs', 'length
 all_the_docs = []
 all_the_paragraphs = []
 for x in arr:
-    f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
+    f = open("/home/jacob/code/responaProjectReccomender/Data/" + x, "rb")
     text = f.read()
     text = text.decode("cp1255", errors="ignore")
     info = read_document(text, x)
