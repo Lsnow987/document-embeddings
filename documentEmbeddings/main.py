@@ -51,21 +51,22 @@ def read_paragraph(paragraph, paragraph_count, doc_name):
     p1 = Paragraph(paragraph, paragraph_count, doc_name, length)
     return p1
 
-
-arr = os.listdir("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/")
+count = 1
+arr = os.listdir("/home/jacob/code/responaProjectReccomender/Data")
 all_documents = list()
 full_graph = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
 for x in arr:
-    f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
+    f = open("/home/jacob/code/responaProjectReccomender/Data/" + x, "rb")
     text = f.read()
-    text = text.decode("cp1255")
+    text = text.decode("cp1255", errors="ignore")
     info = read_document(text, x)
     doc = info[0]
     pgraph = info[1]
     all_documents.append(doc)
     full_graph = pd.concat([pgraph, full_graph], axis=1)
-    if x == "0001000":
+    if count == 1000:
         break
+    count = count + 1
 
 print(full_graph)
 full_graph.to_csv("ex.csv")
