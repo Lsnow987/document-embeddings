@@ -1,3 +1,4 @@
+from fileinput import filename
 import pandas as pd
 from os.path import exists
 from transformers import BertModel, BertTokenizerFast
@@ -5,18 +6,15 @@ import torch
 
 class Manager:
     df = None
-    def __init__(self):
-        file = 'C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/paragraphs.csv'
-        self.df = pd.read_csv(file)
-        # file_exists = exists("C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/docs.csv")
-        # df = None
-        # if file_exists:
-        #     df = pd.read_csv('C:/Users/ysnow/OneDrive/Desktop/summer/pythonProject/docs.csv')
-        # else:
-        #     df = "a"
+    fileName = ""
 
-        #id = which number model this is
-        #name = the name of the model
+    def __init__(self, fileNameIn):
+        fileName = fileNameIn
+        self.df = pd.read_csv(fileName, index_col=0, encoding_errors='ignore')
+
+    ##Creates
+    #id = which number model this is
+    #name = the name of the model
     def addModel(self, id, name):
         return 0
 
@@ -24,6 +22,9 @@ class Manager:
         #document is which document is this a part of
         #text is the text of the document
     def addParagraphs(self, id, document, text):
+        return 0
+
+    def getParagraphText(id):
         return 0
 
     def addEmbedings(self, modelID, pagraphID, embeding):
@@ -75,5 +76,5 @@ class Manager:
 
 
 
-n = Manager()
-n.search(None,None,None)
+n = Manager("paragraphs.csv")
+print(n.df)
