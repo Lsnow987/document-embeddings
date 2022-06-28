@@ -77,6 +77,8 @@ def read_paragraph(paragraph, paragraph_count, doc_name):
 arr = os.listdir("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/")
 all_documents = list()
 
+count = 1
+
 full_graph = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
 doc_full_graph = pd.DataFrame(columns=['title', 'doc_num', 'paragraphs', 'length'])
 all_the_docs = []
@@ -84,7 +86,7 @@ all_the_paragraphs = []
 for x in arr:
     f = open("C:/Users/ysnow/OneDrive/Desktop/responsa_for_research/" + x, "rb")
     text = f.read()
-    text = text.decode("cp1255")
+    text = text.decode("cp1255", errors="ignore")
     info = read_document(text, x)
     doc = info[0]
     all_the_docs.append(doc)
@@ -92,9 +94,9 @@ for x in arr:
 
     doc_pgraph = None
     all_documents.append(doc)
-
-    if x == "0001000":
+    if count == 1000:
         break
+    count = count + 1
 
 # full_graph = pd.concat([pgraph, full_graph], axis=1)
 
