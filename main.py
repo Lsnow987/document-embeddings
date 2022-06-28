@@ -185,7 +185,7 @@ class Manager:
         alephbert_tokenizer = BertTokenizerFast.from_pretrained('onlplab/alephbert-base')
         alephbert = BertModel.from_pretrained('onlplab/alephbert-base')
         alephbert.eval()
-        num_rows = self.get_num_rows()
+        num_rows = get_num_rows()
         for i in range(num_rows):
             text = self.get_paragraph(i)
             inputs = alephbert_tokenizer(text, return_tensors="pt")
@@ -246,5 +246,3 @@ class Manager:
 
 n = Manager()
 n.search(None, None, None)
-
-
