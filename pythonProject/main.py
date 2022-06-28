@@ -171,7 +171,7 @@ class Manager:
 
         pgraph.to_csv("paragraphs.csv")
 
-    def addModel(self, name):
+    def addModel(self, id, name):
         return 0
 
         # id = which number paragraph this is in relation to all of the paragraphs
@@ -184,33 +184,28 @@ class Manager:
     def addEmbedings(self, modelID, pagraphID, embeding):
         alephbert_tokenizer = BertTokenizerFast.from_pretrained('onlplab/alephbert-base')
         alephbert = BertModel.from_pretrained('onlplab/alephbert-base')
-
-        # if not finetuning - disable dropout
         alephbert.eval()
+        num_rows = get_num_rows()
+        for i in range(num_rows):
+            text = self.get_paragraph(i)
+            inputs = alephbert_tokenizer(text, return_tensors="pt")
+            outputs = alephbert(**inputs)
+            logits = outputs.last_hidden_state
+            #print(logits.size())
 
-        same_topic_list = []
-        inputs = alephbert_tokenizer("אבא לבית", return_tensors="pt")
-        inputs1 = alephbert_tokenizer("אמא לבית", return_tensors="pt")
-        inputs2 = alephbert_tokenizer("לבית אדם", return_tensors="pt")
 
-        outputs = alephbert(**inputs)
-        outputs1 = alephbert(**inputs1)
-        outputs2 = alephbert(**inputs2)
+    def get_paragraph(self, paragraphID): #if add paragraph id need to be one more row down
+        text = self.df.values[3][i]
+        return text
 
-        logits = outputs.last_hidden_state
-        logits1 = outputs1.last_hidden_state
-        logits2 = outputs2.last_hidden_state
-
-        print(logits.size())
-        print(logits1.size())
-        print(logits2.size())
-
-        return 0
+    def get_num_rows(self):
+        length = len(self.df)
+        num_rows = int(self.df.size / length)
+        return num_rows
 
     def search(self, paragraphID, modelID, count):
         # list of closet paragraph ID using a particular model
-        length = len(self.df)
-        num_rows = int(self.df.size / length)
+        num_rows = self.get_num_rows()
         # all_embeddings = []
         modelID_row = self.get_modelID_row(modelID)
         paragraph_embedding = self.df.values[modelID_row][
