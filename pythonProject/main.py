@@ -13,7 +13,7 @@ class Document:
         return {
             'title': self.title,
             'doc_num': self.doc_num,
-            'paragraphs': self.paragraphs,
+            'paragraphs': str (self.paragraphs),
             'length': self.length,
         }
 
@@ -33,6 +33,14 @@ class Paragraph:
             'length': self.length,
         }
 
+    def __str__(self):
+        return str ({
+            'paragraph_num': self.paragraph_num,
+            'doc_num': self.doc_num,
+            'paragraph': self.paragraph,
+            'length': self.length,
+        })
+
 
 def read_document(full_text, doc_name):
     # pgraphs = pd.DataFrame(columns=['paragraph_num', 'doc_num', 'paragraph', 'length'])
@@ -49,7 +57,7 @@ def read_document(full_text, doc_name):
         else:
             paragraph = paragraph.split("\r\n", 1)[:]
             # leng = len(paragraph[0])
-        if len(paragraph[0]) > 5:  # should this be 5 or some other number to take out small irrelevant paragrahs that don't mean anything
+        if len(paragraph[0]) > 5:  # what number should this be to take out small paragraphs that don't mean anything
             p = read_paragraph(paragraph, paragraph_count, doc_name)
             paragraph_list.append(p)
         paragraph_count += 1
@@ -87,7 +95,6 @@ for x in arr:
     full_graph = pd.concat([pgraph, full_graph], axis=1)
     if x == "0001000":
         break
-
 
 doc_pgraph = pd.concat([pd.Series(s.to_dict()) for s in all_the_docs], axis=1)
 doc_full_graph = pd.concat([doc_pgraph, doc_full_graph], axis=1)
