@@ -1,8 +1,10 @@
 import pandas as pd
-import torch
 import os
 import numpy as np
 import math
+from transformers import BertModel, BertTokenizerFast
+import torch
+
 pd.options.mode.chained_assignment = None  # default='warn'
 
 class manager:
@@ -55,6 +57,9 @@ class manager:
         return paragraph_text in self.paragraphs_df['paragraph_text'] 
 
     def getParagraph(self, paragraph_id):
+        return self.paragraphs_df.loc[paragraph_id]
+
+    def getParagraphSmall(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
 
     def getParagraphIDs(self):
@@ -119,14 +124,31 @@ for fileName in fileNames:
     if count == 10:
         break
     count = count + 1
-theRebbe.addModel("AlphaBert",duplicates='discard')
+theRebbe.addModel("1AlphaBert",duplicates='discard')
 
-theRebbe.doesModelExist("AlphaBert")
+#theRebbe.addParagraphEmbedings('AlphaBert',{0:[3,3,3],
+#                                                1:[[4,5,6],[7,8,9]]})
 
-theRebbe.addParagraphEmbedings('AlphaBert',{0:[3,3,3],
-                                                1:[[4,5,6],[7,8,9]]})
-print(theRebbe.getEmbeding(0,"AlphaBert"))
+alephbert_tokenizer = BertTokenizerFast.from_pretrained('onlplab/alephbert-base')
+alephbert = BertModel.from_pretrained('onlplab/alephbert-base')
+alephbert.eval()
 
-theRebbe.exportCSV("test2.csv")
-theRebbe.exportDataFrame("test.pkt")
 
+
+print(theRebbe.paragraphs_df)
+for id in theRebbe.getParagraphIDs():
+    text = theRebbe.getParagraph(id)['paragraph_text']
+    #print(len(text))
+    c = " ".join(text.split()[:200])
+    input = alephbert_tokenizer(c, return_tensors="pt")
+    output = alephbert(**input)
+    enncoding = output.last_hidden_state
+
+    #print(enncoding.shape) 
+
+    #TODO I'm not sure what to do because the embedding are not the same size
+    theRebbe.addParagraphEmbedings('1AlphaBert',{id:enncoding.detach().numpy()})
+
+theRebbe.exportCSV("test.csv")
+theRebbe.exportDataFrame("test3.pkt")
+print(theRebbe.paragraphs_df)
