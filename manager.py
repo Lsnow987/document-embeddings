@@ -51,9 +51,8 @@ class manager:
         self.paragraphs_df.loc[paragraph_id] = [paragraph_id, paragraph_text, document_id, len(paragraph_text)] + [0] * (len(self.paragraphs_df.columns)-4)
         return paragraph_id
 
-    def doesParagraphExist(self,paragraph_text, document_id):
-        matches = self.paragraphs_df['paragraph_id'].where(np.logical_and(self.paragraphs_df['document_id'] == document_id, self.paragraphs_df['paragraph_text'] == paragraph_text))
-        return not math.isnan(matches.iloc[0])
+    def doesParagraphExist(self, paragraph_text, document_id):
+        return paragraph_text in self.paragraphs_df['paragraph_text'] 
 
     def getParagraph(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
@@ -85,7 +84,7 @@ class manager:
 
 # Create a Test Manager Class
 theRebbe = manager()
-theRebbe.loadDataFrame("test.pkt")
+#theRebbe.loadDataFrame("test.pkt")
 
 print("The Rebbe: ")
 print(theRebbe.paragraphs_df)
