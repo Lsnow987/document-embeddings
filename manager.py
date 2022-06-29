@@ -1,6 +1,9 @@
 import pandas as pd
 import torch
 import os
+import numpy as np
+import math
+pd.options.mode.chained_assignment = None  # default='warn'
 
 class manager:
     # Main Dataframe
@@ -8,40 +11,84 @@ class manager:
 
     # Constructor - no filepath
     def __init__(self):
-        self.paragraphs_df = pd.DataFrame(columns=['paragraph_id', 'paragraph_text', 'document_id','length'])
+        self.paragraphs_df = pd.DataFrame(columns=['paragraph_id', 'paragraph_text', 'document_id','length']).astype('object')
 
     def loadCSV(self, filePath):
         self.paragraphs_df = pd.read_csv(filePath, index_col=0, encoding_errors='ignore')
 
-    def addModel(self, id, name):
-        idNameCombo = str(id) + "-" + name
-        self.paragraphs_df[idNameCombo] =  torch.tensor([0] * self.paragraphs_df.shape[0])
-        return idNameCombo
+    def loadDataFrame(self, filePath):
+        self.paragraphs_df = pd.read_pickle(filePath)
 
-    def addParagraph(self, paragraph_text, document_id):
+    def doesModelExist(self,name):
+        return(name in self.paragraphs_df.columns)
+
+    def addModel(self, name, duplicates="yell"):
+        if(self.paragraphs_df.shape[0] == 0):
+            raise Exception("No paragraphs to add model to, please add paragraphs first")
+
+        if(duplicates!= 'ignore' and self.doesModelExist(name)):
+            if(duplicates=="discard"):
+                return -1
+            raise Exception ("Model Already Exists")
+
+        ser = pd.Series(np.zeros((self.paragraphs_df.shape[0], 3)).tolist(),dtype=object)
+        self.paragraphs_df = pd.concat([self.paragraphs_df, ser.rename(name)], axis=1)
+        return name
+
+    def addParagraphEmbedings(self, model_name, paragraph_id_embeding_dictionary):
+        ser = self.paragraphs_df[model_name]
+        for paragraph_id, embedding in paragraph_id_embeding_dictionary.items():
+            ser[paragraph_id] = embedding
+        self.paragraphs_df[model_name] = ser
+        return model_name
+
+    def addParagraph(self, paragraph_text, document_id, duplicates="yell"):
+        if(duplicates != "ignore" and self.doesParagraphExist(paragraph_text,document_id)):
+            if(duplicates == 'discard'):
+                return -1
+            raise Exception("Duplicate Paragraph with Document ID: " + str(document_id))
         paragraph_id = self.paragraphs_df.shape[0]
         self.paragraphs_df.loc[paragraph_id] = [paragraph_id, paragraph_text, document_id, len(paragraph_text)] + [0] * (len(self.paragraphs_df.columns)-4)
-        #print(self.paragraphs_df)
         return paragraph_id
+
+    def doesParagraphExist(self,paragraph_text, document_id):
+        matches = self.paragraphs_df['paragraph_id'].where(np.logical_and(self.paragraphs_df['document_id'] == document_id, self.paragraphs_df['paragraph_text'] == paragraph_text))
+        return not math.isnan(matches.iloc[0])
 
     def getParagraph(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
 
-    def getParagraphs(self):
+    def getParagraphIDs(self):
         return self.paragraphs_df['paragraph_id'].tolist()
 
     def getParagraphsByDocument(self, document_id):
         return self.paragraphs_df[self.paragraphs_df['document_id'] == document_id]['paragraph_id'].tolist()
 
-    def exportDataFrame(self, filePath):
+    def exportCSV(self, filePath):
         self.paragraphs_df.to_csv(filePath)
+
+    def exportDataFrame(self, filePath):
+        self.paragraphs_df.to_pickle(filePath)
+
+    def getEmbeding(self,paragraphID,model):
+        return self.paragraphs_df.at[paragraphID,model]
+
+    def search(self, model, paragraphID, count):
+        return self.findClosest(self.getEmbeding(paragraphID,model),paragraphID, model, count)
+
+    def findClosest(self, embedding, paragraphID, model, count):
+        #Limiting our search area
+        searchMe = self.paragraphs_df.where(np.logical_and(self.paragraphs_df['paragraphID'] != paragraphID, np.logical_or(self.paragraphs_df['model'] != 0, self.paragraphs_df['model'] != np.NaN)))
+        #TODO Realizing that its kind of hard to see if this will work without having actual embedding, so I will start adding embedings 
+
 
 
 # Create a Test Manager Class
 theRebbe = manager()
+theRebbe.loadDataFrame("test.pkt")
 
-theRebbe.addModel(1, "AlphaBert")
-
+print("The Rebbe: ")
+print(theRebbe.paragraphs_df)
 # Now Let's Read the Documents
 fileNames = os.listdir("/home/jacob/code/responaProjectReccomender/Data/")
 all_documents = list()
@@ -65,7 +112,7 @@ for fileName in fileNames:
             paragraph = paragraph.split("\r\n", 1)[:]
 
         if len(paragraph[0]) > 5:  # what number should this be to take out small paragraphs that don't mean anything
-            theRebbe.addParagraph(paragraph[0], fileName)
+            theRebbe.addParagraph(paragraph[0], fileName,"discard")
             #theRebbe.addParagraph(paragraph, fileName)
         paragraph_count += 1
 
@@ -73,7 +120,14 @@ for fileName in fileNames:
     if count == 10:
         break
     count = count + 1
+theRebbe.addModel("AlphaBert",duplicates='discard')
 
+theRebbe.doesModelExist("AlphaBert")
 
-theRebbe.exportDataFrame("test.csv")
+theRebbe.addParagraphEmbedings('AlphaBert',{0:[3,3,3],
+                                                1:[[4,5,6],[7,8,9]]})
+print(theRebbe.getEmbeding(0,"AlphaBert"))
+
+theRebbe.exportCSV("test2.csv")
+theRebbe.exportDataFrame("test.pkt")
 
