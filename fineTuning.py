@@ -1,5 +1,4 @@
-# a lot of the code here is either taken from or base off of the code here: https://huggingface.co/course/chapter7/3?fw=pt
-# uncomment lines 3 to 9 if running in a colab notebook
+# a lot of the code here is either taken from or based off of the code here: https://huggingface.co/course/chapter7/3?fw=pt
 # !pip install datasets
 # !pip install hughuggingface_hub
 # !pip install torch
@@ -7,12 +6,15 @@
 # !pip install accelerate
 # !pip install tqdm
 # !pip install pandas
+# !pip install numpy
 import html
+import numpy as np
 import pandas as pd
 from datasets import load_dataset
 from huggingface_hub import notebook_login
 from torch.utils.data import DataLoader
-from transformers import default_data_collator
+from transformers import default_data_collator, DataCollatorForLanguageModeling
+from transformers import AutoModelForMaskedLM, AutoTokenizer
 from torch.optim import AdamW
 from accelerate import Accelerator
 from transformers import get_scheduler
@@ -20,6 +22,11 @@ from huggingface_hub import Repository
 from tqdm.auto import tqdm
 import torch
 import math
+
+
+model_checkpoint = "onlplab/alephbert-base"
+model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 def tokenize_function(paragraphs):
     result = tokenizer(paragraphs["paragraph_text"])
@@ -141,8 +148,6 @@ from huggingface_hub import get_full_repo_name
 # ysnow9876/
 model_name = "alephbert-base-finetuned-for-shut"
 repo_name = get_full_repo_name(model_name)
-print(repo_name)
-print("\n reached here \n")
 output_dir = model_name
 repo = Repository(output_dir, clone_from=repo_name)
 
