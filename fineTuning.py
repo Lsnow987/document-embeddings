@@ -21,8 +21,9 @@ from transformers import get_scheduler
 from huggingface_hub import Repository
 from tqdm.auto import tqdm
 import torch
+# torch.cuda.empty_cache()
 import math
-
+!git config --global credential.helper store
 
 model_checkpoint = "onlplab/alephbert-base"
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
