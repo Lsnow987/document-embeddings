@@ -1,5 +1,14 @@
 # a lot of the code here is either taken from or base off of the code here: https://huggingface.co/course/chapter7/3?fw=pt
+# uncomment lines 3 to 9 if running in a colab notebook
+# !pip install datasets
+# !pip install hughuggingface_hub
+# !pip install torch
+# !pip install transformers
+# !pip install accelerate
+# !pip install tqdm
+# !pip install pandas
 import html
+import pandas as pd
 from datasets import load_dataset
 from huggingface_hub import notebook_login
 from torch.utils.data import DataLoader
