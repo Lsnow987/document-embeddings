@@ -81,15 +81,35 @@ class manager:
         return self.findClosest(self.getEmbeding(paragraphID,model),paragraphID, model, count)
 
     def findClosest(self, embedding, paragraphID, model, count):
-        #Limiting our search area
-        searchMe = self.paragraphs_df.where(np.logical_and(self.paragraphs_df['paragraphID'] != paragraphID, np.logical_or(self.paragraphs_df['model'] != 0, self.paragraphs_df['model'] != np.NaN)))
-        #TODO Realizing that its kind of hard to see if this will work without having actual embedding, so I will start adding embedings 
 
+        # Make sure that we don't ask for more data than in the dataset
+        if(count > self.paragraphs_df.shape[0]):
+            count = self.paragraphs_df.shape[0]
+
+        #Limiting our search area
+        searchMe = self.paragraphs_df.where(
+                self.paragraphs_df['paragraph_id'] != paragraphID
+            )
+
+
+        #Calculating the distance between the embedding and the other embeddings
+        for i in range(searchMe.shape[0]):
+            if (i == paragraphID):
+                searchMe.drop(labels=paragraphID, axis=0)
+                continue 
+            c = torch.dist(torch.tensor(embedding), torch.tensor(searchMe.at[i, model]))
+            searchMe.at[i, 'distance'] = c.item()
+
+        #Sorting the results by distance
+
+        searchMe = searchMe.sort_values(by='distance')
+        
+        #Returning the top count results
+        return searchMe.iloc[:count, :]
 
 
 # Create a Test Manager Class
 theRebbe = manager()
-#theRebbe.loadDataFrame("test.pkt")
 
 print("The Rebbe: ")
 print(theRebbe.paragraphs_df)
@@ -98,6 +118,8 @@ fileNames = os.listdir("/home/jacob/code/responaProjectReccomender/Data/")
 all_documents = list()
 
 count = 1
+fileNames.sort()
+fileNames = fileNames[:1000]
 for fileName in fileNames:
     f = open("/home/jacob/code/responaProjectReccomender/Data/" + fileName, "rb")
     text = f.read()
@@ -115,17 +137,14 @@ for fileName in fileNames:
         else:
             paragraph = paragraph.split("\r\n", 1)[:]
 
-        if len(paragraph[0]) > 5:  # what number should this be to take out small paragraphs that don't mean anything
+        if len(paragraph[0]) > 1000:  # what number should this be to take out small paragraphs that don't mean anything
             theRebbe.addParagraph(paragraph[0], fileName,"discard")
             #theRebbe.addParagraph(paragraph, fileName)
         paragraph_count += 1
 
-    # doc_pgraph = None
-    if count == 10:
-        break
-    count = count + 1
-theRebbe.addModel("1AlphaBert",duplicates='discard')
 
+theRebbe.addModel("1AlphaBert",duplicates='discard')
+print("Data Added")
 #theRebbe.addParagraphEmbedings('AlphaBert',{0:[3,3,3],
 #                                                1:[[4,5,6],[7,8,9]]})
 
@@ -135,20 +154,26 @@ alephbert.eval()
 
 
 
+counter = 0
 print(theRebbe.paragraphs_df)
 for id in theRebbe.getParagraphIDs():
     text = theRebbe.getParagraph(id)['paragraph_text']
-    #print(len(text))
-    c = " ".join(text.split()[:200])
-    input = alephbert_tokenizer(c, return_tensors="pt")
+    input = alephbert_tokenizer(text, return_tensors="pt", truncation=True, max_length=512, padding="max_length")
     output = alephbert(**input)
     enncoding = output.last_hidden_state
 
-    #print(enncoding.shape) 
 
     #TODO I'm not sure what to do because the embedding are not the same size
     theRebbe.addParagraphEmbedings('1AlphaBert',{id:enncoding.detach().numpy()})
 
-theRebbe.exportCSV("test.csv")
-theRebbe.exportDataFrame("test3.pkt")
+    if(counter % 100 == 0):
+        print(counter)
+    counter += 1
+    
+
+theRebbe.exportCSV("long_para1.csv")
+theRebbe.exportDataFrame("long_para1.pkt")
 print(theRebbe.paragraphs_df)
+
+results = theRebbe.search("1AlphaBert",14,10)
+results.to_csv("long_para_search2.csv")
