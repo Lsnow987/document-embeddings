@@ -87,10 +87,11 @@ class manager:
             count = self.paragraphs_df.shape[0]
 
         #Limiting our search area
+        all_info = theRebbe.getParagraph(paragraphID)
+        doc_id = all_info[2]
         searchMe = self.paragraphs_df.where(
-                self.paragraphs_df['paragraph_id'] != paragraphID
+                self.paragraphs_df['document_id'] != doc_id
             )
-
 
         #Calculating the distance between the embedding and the other embeddings
         for i in range(searchMe.shape[0]):
