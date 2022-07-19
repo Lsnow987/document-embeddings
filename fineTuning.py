@@ -15,6 +15,11 @@ import torch
 torch.cuda.empty_cache()
 import math
 
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
+
+
 
 model_checkpoint = "onlplab/alephbert-base"
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint).to("cuda")
@@ -113,7 +118,7 @@ eval_dataset = eval_dataset.rename_columns(
 print(eval_dataset)
 
 
-batch_size = 20  # what do we want this to be?
+batch_size = 16  # what do we want this to be?
 train_dataloader = DataLoader(
     downsampled_dataset["train"],
     shuffle=True,
@@ -144,7 +149,6 @@ lr_scheduler = get_scheduler(
 
 
 from huggingface_hub import get_full_repo_name
-# ysnow9876/
 model_name = "alephbert-base-finetuned-for-shut"
 repo_name = get_full_repo_name(model_name)
 output_dir = model_name
@@ -155,6 +159,7 @@ progress_bar = tqdm(range(num_training_steps))
 for epoch in range(num_train_epochs):
     # Training
     model.train()
+    batch_num = 0
     for batch in train_dataloader:
         outputs = model(**batch)
         loss = outputs.loss
@@ -164,6 +169,10 @@ for epoch in range(num_train_epochs):
         lr_scheduler.step()
         optimizer.zero_grad()
         progress_bar.update(1)
+        writer.add_scalar("Train Loss", loss, batch_num)
+        batch_num += 1
+
+
 
     # Evaluation
     model.eval()
@@ -183,6 +192,8 @@ for epoch in range(num_train_epochs):
         perplexity = float("inf")
 
     print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
+    writer.add_scalar("Perplexity", perplexity, batch_num)
+
 
     # Save and upload
     accelerator.wait_for_everyone()
@@ -193,3 +204,6 @@ for epoch in range(num_train_epochs):
         repo.push_to_hub(
             commit_message=f"Training in progress epoch {epoch}", blocking=False
         )
+
+writer.flush()
+writer.close()
