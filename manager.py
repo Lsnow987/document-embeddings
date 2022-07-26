@@ -168,6 +168,7 @@ class manager:
                 paragraph_count += 1
 
 
+    #Given a paragraph id, find the closest paragraphs to it
     def generate_embeddings(self, model, startValue, end):
         alephbert_tokenizer = None
         alephbert = None
