@@ -1,3 +1,4 @@
+from sqlite3 import Row
 from time import time
 from turtle import distance
 from xmlrpc.client import DateTime
@@ -215,7 +216,13 @@ class manager:
         all_info = theRebbe.getParagraph(paragraphID)
         doc_id = all_info[2]
         searchMe = self.paragraphs_df
-        searchMe = searchMe
+        # print(searchMe)
+        # time.sleep(1)
+        for index, row in searchMe.iterrows():
+            if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
+                searchMe.drop(index, inplace=True, axis='index')
+
+        # searchMe.drop(searchMe[searchMe['document_id'] == doc_id].index, inplace=True)
 
         print("Calculating Distances")
         #Calculating the distance between the embedding and the other embeddings
@@ -256,16 +263,16 @@ model = "1AlphaBert"
 dataframe = "all_paragraphs_final1AlphaBert.pkt"
 directory = "home/..."
 theRebbe.loadDataFrame(dataframe)
-theRebbe.combine_files(directory)
-theRebbe.addModel(model,duplicates='discard')
+#theRebbe.combine_files(directory)
+#theRebbe.addModel(model,duplicates='discard')
 
-start = 0
-end = 100_000
-theRebbe.generate_embeddings(model, start, end)
+# start = 0
+# end = 100_000
+# theRebbe.generate_embeddings(model, start, end)
 
 x = 0
 before = time.time()
-num_of_searches = 24
+num_of_searches = 1
 while x < num_of_searches:
     
     results1 = theRebbe.search(model,x,10)
