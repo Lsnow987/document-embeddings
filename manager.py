@@ -123,11 +123,14 @@ class manager:
                     new_line = " ".join(new_line)
                     pdf.cell(0, 10, txt=new_line, align="R")
                     pdf.ln()
-                    new_line = ""
+                    new_line = word + " "
                     line_index = 0
 
-        pdf.cell(0, 10, txt=new_line, align="R")
-        pdf.ln()
+            new_line = new_line.split()
+            new_line = np.flip(np.array(new_line))
+            new_line = " ".join(new_line)
+            pdf.cell(0, 10, txt=new_line, align="R")
+            pdf.ln()
         pdf.output(filename, "F")
         print("PDF Created")
         return "distances.pdf"
