@@ -111,15 +111,8 @@ class manager:
             pdf.cell(200, 10, txt=f"Paragraph ID: {currId}", ln=1, align="C")
             pdf.ln()
             pdf.cell(200, 10, txt=f"Paragraph Distance: {distances[row]}", ln=1, align="C")
-<<<<<<< HEAD
-            pdf.ln() 
-            print("ROW: " + str(row)) 
-            print(self.paragraphs_df.head(5))          
-            getParagraph = self.getParagraph(row)
-=======
             pdf.ln()            
             getParagraph = self.getParagraph(currId)
->>>>>>> 9f0d58decc7f4e2dc48b42250fb09ba45b7658cc
             pdf.cell(200, 10, txt=f"Doc ID: {getParagraph['document_id']}", ln=1, align="C")
             pdf.ln()            
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
@@ -150,7 +143,7 @@ class manager:
         print("PDF Created")
         return "distances.pdf"
 
-    def combine_files(self, directory):
+    def generate_datafrane_standard(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
@@ -182,6 +175,53 @@ class manager:
                     theRebbe.addParagraph(paragraph[0], fileName,"discard")
                 paragraph_count += 1
 
+    def generate_datafrane_per_document(self, directory):
+        #  Now Let's Read the Documents
+        # "/zooper2/jacob.khalili/docEmbeddings/Data/"
+        fileNames = os.listdir(directory)
+
+        count = 1
+        fileNames.sort()
+        for fileName in fileNames:
+            f = open(directory + fileName, "rb")
+            text = f.read()
+            full_text = text.decode("cp1255", errors="ignore")
+
+            if(count % 100 == 0):
+                print("Processing Document: " + str(count))
+            count += 1
+
+            # length_of_doc = len(full_text)
+            full_text = full_text.replace("@", "").replace("/", "")
+            text_array = full_text.split(" ")
+            final_text = " ".join(text_array[0:250]) + "..." + " ".join(text_array[-250:])
+
+            theRebbe.addParagraph(final_text[0], fileName,"discard")
+
+    def generate_datafrane_per_100(self, directory):
+        #  Now Let's Read the Documents
+        # "/zooper2/jacob.khalili/docEmbeddings/Data/"
+        fileNames = os.listdir(directory)
+
+        count = 1
+        fileNames.sort()
+        for fileName in fileNames:
+            f = open(directory + fileName, "rb")
+            text = f.read()
+            full_text = text.decode("cp1255", errors="ignore")
+
+            if(count % 100 == 0):
+                print("Processing Document: " + str(count))
+            count += 1
+
+            # length_of_doc = len(full_text)
+            full_text = full_text.replace("@", "").replace("/", "")
+            text_array = full_text.split(" ")
+            n = 100
+            chunks = [text_array[i:i + n] for i in range(0, len(text_array), n)]
+            for chunk in chunks:
+                final_text = " ".join(chunk)
+                theRebbe.addParagraph(final_text[0], fileName,"discard")
 
     #Given a paragraph id, find the closest paragraphs to it
     def generate_embeddings(self, model, startValue, end):
@@ -206,17 +246,17 @@ class manager:
                 #TODO I'm not sure what to do because the embedding are not the same size
                 theRebbe.addParagraphEmbedings(model,{id:enncoding.detach().numpy()})
 
-                if(counter % 100 == 0):
+                if(counter % 1000 == 0):
                     print(counter)
 
-                if(counter % 5000 == 0 and counter != startValue and counter != 0):
+                #if(counter % 5000 == 0 and counter != startValue and counter != 0):
                     # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-                    theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
+                    # theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
                 counter += 1
                 
                 if counter == end:
-                    theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-                    theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
+                    # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
+                    # theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
                     break
 
 
@@ -277,25 +317,34 @@ class manager:
 # Create a Test Manager Class
 theRebbe = manager()
 model = "1AlphaBert"
-dataframe = "all_paragraphs_final1AlphaBert.pkt"
-directory = "home/..."
-theRebbe.loadDataFrame(dataframe)
-#theRebbe.combine_files(directory)
-#theRebbe.addModel(model,duplicates='discard')
+directory = "/home/jacob/code/responaProjectReccomender/Data/"
 
+# # theRebbe.generate_datafrane_per_document(directory)
+# theRebbe.loadDataFrame("documents_250+250.pkt")
+# print(theRebbe.paragraphs_df.shape)
+# #theRebbe.combine_files(directory)
+# theRebbe.addModel(model,duplicates='discard')
 # start = 0
-# end = 100_000
-# theRebbe.generate_embeddings(model, start, end)
+# end = 26801
+# theRebbe.generate_embeddings(model, 0, 5360)
+# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
+# theRebbe.generate_embeddings(model, 5361, 10720)
+# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
+# theRebbe.generate_embeddings(model, 10721, 16080)
+# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
+# theRebbe.generate_embeddings(model, 16081, 21440)
+# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
+# theRebbe.generate_embeddings(model, 21441, 26801)
+# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
 
-x = 0
-before = time.time()
-num_of_searches = 1
-while x < num_of_searches:
+
+# x = 0
+# before = time.time()
+# num_of_searches = 6
+# while x < num_of_searches:
     
-    results1 = theRebbe.search(model,x,10)
-    theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
-    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-    x+=1
-
-after = time.time()
-print((after - before)/num_of_searches)
+#     results1 = theRebbe.search(model,x,10)
+#     theRebbe.createPDF(results1, f"documents_250+250_{model}_find10_"+str(x)+".pdf")
+#     x+=1
+# after = time.time()
+# print((after - before)/num_of_searches)
