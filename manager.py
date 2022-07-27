@@ -104,7 +104,9 @@ class manager:
             pdf.cell(200, 10, txt=f"Paragraph ID: {row}", ln=1, align="C")
             pdf.ln()
             pdf.cell(200, 10, txt=f"Paragraph Distance: {distances[row]}", ln=1, align="C")
-            pdf.ln()            
+            pdf.ln() 
+            print("ROW: " + str(row)) 
+            print(self.paragraphs_df.head(5))          
             getParagraph = self.getParagraph(row)
             pdf.cell(200, 10, txt=f"Doc ID: {getParagraph['document_id']}", ln=1, align="C")
             pdf.ln()            
@@ -220,7 +222,11 @@ class manager:
         # time.sleep(1)
         for index, row in searchMe.iterrows():
             if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
-                searchMe.drop(index, inplace=True, axis='index')
+                print("PID: "+str(row['paragraph_id']))
+                print("P: "+row['paragraph_text'])
+                print("DID: " + str(row['document_id']) + "\n")
+                searchMe = searchMe.drop(index, axis='index')
+                continue
 
         # searchMe.drop(searchMe[searchMe['document_id'] == doc_id].index, inplace=True)
 
@@ -229,7 +235,7 @@ class manager:
         
         batch_size = 1024
         num_rows = searchMe.shape[0]
-        num_batches = 66 #math.ceil(num_rows / batch_size)
+        num_batches = 65 #math.ceil(num_rows / batch_size)
 
         #Create a Series
         df = pd.DataFrame(columns=[])
