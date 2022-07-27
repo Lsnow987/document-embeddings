@@ -6,13 +6,13 @@ import pandas as pd
 import os
 import numpy as np
 import math
-from transformers import BertModel, BertTokenizerFast
+from transformers import BertModel, BertTokenizerFast, BertTokenizer, BertForMaskedLM
 import torch
 from tqdm import tqdm
 import time
 import fpdf
 from unidecode import unidecode
-
+from rabtokenizer import RabbinicTokenizer
 pd.options.mode.chained_assignment = None  # default='warn'
 
 class manager:
@@ -65,10 +65,7 @@ class manager:
         return paragraph_text in self.paragraphs_df['paragraph_text'] 
 
     def getParagraph(self, paragraph_id):
-        # try:
         return self.paragraphs_df.loc[paragraph_id]
-        # except:
-            # return self.paragraphs_df.loc[paragraph_id + dropped]
 
     def getParagraphSmall(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
@@ -90,7 +87,10 @@ class manager:
 
     def search(self, model, paragraphID, count):
         global first_id 
-        first_id= paragraphID
+        global first_doc_id
+        first_id = paragraphID
+        first_doc_id = self.getParagraph(first_id)[2]
+
         print("Searching for " + str(count) + " closest paragraphs")
         print(self.getParagraph(paragraphID))
         return self.findClosest(self.getEmbeding(paragraphID,model),paragraphID, model, count)
@@ -106,14 +106,37 @@ class manager:
             # print(type(row))
             pdf.add_page()
             currId = row
+            
+            
             if(row > first_id):
                 currId = row + dropped
+
+            getParagraph = self.getParagraph(currId)
+            doc_Id = getParagraph['document_id']
+
+            # counter = 0
+            # for index, rows in self.paragraphs_df.iterrows():
+            #     if(rows['document_id'] == doc_Id):
+            #         # if row['paragraph_id'] == first_id:
+            #         break
+            #     else:
+            #         counter+=1    
+
+            if(doc_Id == first_doc_id):
+                local_id = getParagraph["localParagraphId"]
+                # if(local_id == counter):
+                #     print("EQUALS")
+                # print("local id: "+str(local_id))
+                # print("counter: "+ str(counter))
+                currId = (currId + first_id - local_id) #currId + local_id #(first_id - counter)
+
+            
             pdf.cell(200, 10, txt=f"Paragraph ID: {currId}", ln=1, align="C")
             pdf.ln()
             pdf.cell(200, 10, txt=f"Paragraph Distance: {distances[row]}", ln=1, align="C")
             pdf.ln()            
-            getParagraph = self.getParagraph(currId)
-            pdf.cell(200, 10, txt=f"Doc ID: {getParagraph['document_id']}", ln=1, align="C")
+            
+            pdf.cell(200, 10, txt=f"Doc ID: {doc_Id}", ln=1, align="C")
             pdf.ln()            
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
@@ -269,7 +292,7 @@ class manager:
         #Limiting our search area
         all_info = theRebbe.getParagraph(paragraphID)
         doc_id = all_info[2]
-        searchMe = self.paragraphs_df
+        searchMe = self.paragraphs_df.copy()
         # print(searchMe)
         # time.sleep(1)
         global dropped
@@ -286,7 +309,7 @@ class manager:
         
         batch_size = 1024
         num_rows = searchMe.shape[0]
-        num_batches = 65 #math.ceil(num_rows / batch_size)
+        num_batches = 66 #math.ceil(num_rows / batch_size)
 
         #Create a Series
         df = pd.DataFrame(columns=[])
@@ -313,11 +336,50 @@ class manager:
         #Returning the top count results
         return distances.iloc[:(count+1)]
 
+    def add_local_paragraph_ids(self):
+        # theRebbe.addModel("localParagraphId")
+        counter = 0
+        inner_counter = 0
+        initial_doc_id = None
+        for index, rows in theRebbe.paragraphs_df.iterrows():
+            # getParagraph = theRebbe.getParagraph(currId)
+            doc_Id = rows['document_id']
+            if initial_doc_id == None:
+                initial_doc_id = doc_Id
+            elif initial_doc_id == doc_Id:
+                inner_counter += 1
+            else:
+                initial_doc_id = doc_Id
+                counter+=1
+                counter += inner_counter
+                inner_counter = 0
+            theRebbe.paragraphs_df.loc[index, "localParagraphId"] = counter
+
+        print(theRebbe.paragraphs_df)
+        theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
+           
+        # theRebbe.paragraphs_df.to_csv("local_ids.csv")
+
 
 # Create a Test Manager Class
 theRebbe = manager()
 model = "1AlphaBert"
+<<<<<<< HEAD
 directory = "/home/jacob/code/responaProjectReccomender/Data/"
+=======
+dataframe = "all_paragraphs_final1AlphaBert.pkt"
+directory = "home/..."
+theRebbe.loadDataFrame(dataframe)
+
+bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
+tokenizer = RabbinicTokenizer(BertTokenizer.from_pretrained(os.path.join(bert_path, 'vocab.txt')))
+model = BertForMaskedLM.from_pretrained(bert_path)
+
+# theRebbe.add_local_paragraph_ids()
+
+#theRebbe.combine_files(directory)
+#theRebbe.addModel(model,duplicates='discard')
+>>>>>>> 5feea106aa3e35d77b68e94e11cdfc51dcbc528b
 
 # # theRebbe.generate_datafrane_per_document(directory)
 # theRebbe.loadDataFrame("documents_250+250.pkt")
@@ -325,6 +387,7 @@ directory = "/home/jacob/code/responaProjectReccomender/Data/"
 # #theRebbe.combine_files(directory)
 # theRebbe.addModel(model,duplicates='discard')
 # start = 0
+<<<<<<< HEAD
 # end = 26801
 # theRebbe.generate_embeddings(model, 0, 5360)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
@@ -346,5 +409,20 @@ directory = "/home/jacob/code/responaProjectReccomender/Data/"
 #     results1 = theRebbe.search(model,x,10)
 #     theRebbe.createPDF(results1, f"documents_250+250_{model}_find10_"+str(x)+".pdf")
 #     x+=1
+=======
+# end = 100_000
+# theRebbe.generate_embeddings(model, start, end)
+
+# x = 0
+# before = time.time()
+# num_of_searches = 30
+# while x < num_of_searches:
+#     # theRebbe.loadDataFrame(dataframe)
+#     results1 = theRebbe.search(model,x,10)
+#     theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
+#     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
+#     x+=1
+
+>>>>>>> 5feea106aa3e35d77b68e94e11cdfc51dcbc528b
 # after = time.time()
 # print((after - before)/num_of_searches)
