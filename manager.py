@@ -6,13 +6,13 @@ import pandas as pd
 import os
 import numpy as np
 import math
-from transformers import BertModel, BertTokenizerFast
+from transformers import BertModel, BertTokenizerFast, BertTokenizer, BertForMaskedLM
 import torch
 from tqdm import tqdm
 import time
 import fpdf
 from unidecode import unidecode
-
+from rabtokenizer import RabbinicTokenizer
 pd.options.mode.chained_assignment = None  # default='warn'
 
 class manager:
@@ -320,6 +320,11 @@ model = "1AlphaBert"
 dataframe = "all_paragraphs_final1AlphaBert.pkt"
 directory = "home/..."
 theRebbe.loadDataFrame(dataframe)
+
+bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
+tokenizer = RabbinicTokenizer(BertTokenizer.from_pretrained(os.path.join(bert_path, 'vocab.txt')))
+model = BertForMaskedLM.from_pretrained(bert_path)
+
 # theRebbe.add_local_paragraph_ids()
 
 #theRebbe.combine_files(directory)
@@ -329,15 +334,15 @@ theRebbe.loadDataFrame(dataframe)
 # end = 100_000
 # theRebbe.generate_embeddings(model, start, end)
 
-x = 0
-before = time.time()
-num_of_searches = 30
-while x < num_of_searches:
-    # theRebbe.loadDataFrame(dataframe)
-    results1 = theRebbe.search(model,x,10)
-    theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
-    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-    x+=1
+# x = 0
+# before = time.time()
+# num_of_searches = 30
+# while x < num_of_searches:
+#     # theRebbe.loadDataFrame(dataframe)
+#     results1 = theRebbe.search(model,x,10)
+#     theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
+#     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
+#     x+=1
 
-after = time.time()
-print((after - before)/num_of_searches)
+# after = time.time()
+# print((after - before)/num_of_searches)
