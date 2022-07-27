@@ -65,7 +65,10 @@ class manager:
         return paragraph_text in self.paragraphs_df['paragraph_text'] 
 
     def getParagraph(self, paragraph_id):
+        # try:
         return self.paragraphs_df.loc[paragraph_id]
+        # except:
+            # return self.paragraphs_df.loc[paragraph_id + dropped]
 
     def getParagraphSmall(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
@@ -86,6 +89,8 @@ class manager:
         return self.paragraphs_df.at[paragraphID,model]
 
     def search(self, model, paragraphID, count):
+        global first_id 
+        first_id= paragraphID
         print("Searching for " + str(count) + " closest paragraphs")
         print(self.getParagraph(paragraphID))
         return self.findClosest(self.getEmbeding(paragraphID,model),paragraphID, model, count)
@@ -94,23 +99,30 @@ class manager:
 
         pdf = fpdf.FPDF()
         # pdf.set_font("Arial", size=12)
-        pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansCondensed.ttf', uni=True)
+        pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
         pdf.set_font('DejaVu', '', 14)
         # print(distances)
         for row in distances.index:
             # print(type(row))
             pdf.add_page()
-        
-            pdf.cell(200, 10, txt=f"Paragraph ID: {row}", ln=1, align="C")
+            currId = row
+            if(row > first_id):
+                currId = row + dropped
+            pdf.cell(200, 10, txt=f"Paragraph ID: {currId}", ln=1, align="C")
             pdf.ln()
             pdf.cell(200, 10, txt=f"Paragraph Distance: {distances[row]}", ln=1, align="C")
+<<<<<<< HEAD
             pdf.ln() 
             print("ROW: " + str(row)) 
             print(self.paragraphs_df.head(5))          
             getParagraph = self.getParagraph(row)
+=======
+            pdf.ln()            
+            getParagraph = self.getParagraph(currId)
+>>>>>>> 9f0d58decc7f4e2dc48b42250fb09ba45b7658cc
             pdf.cell(200, 10, txt=f"Doc ID: {getParagraph['document_id']}", ln=1, align="C")
             pdf.ln()            
-            text = self.getParagraph(row)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
+            text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
             text = text.split()
             text = np.flip(np.array(text))
@@ -220,13 +232,12 @@ class manager:
         searchMe = self.paragraphs_df
         # print(searchMe)
         # time.sleep(1)
+        global dropped
+        dropped = 0
         for index, row in searchMe.iterrows():
             if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
-                print("PID: "+str(row['paragraph_id']))
-                print("P: "+row['paragraph_text'])
-                print("DID: " + str(row['document_id']) + "\n")
-                searchMe = searchMe.drop(index, axis='index')
-                continue
+                searchMe.drop(index, inplace=True, axis='index')
+                dropped += 1
 
         # searchMe.drop(searchMe[searchMe['document_id'] == doc_id].index, inplace=True)
 
@@ -288,4 +299,3 @@ while x < num_of_searches:
 
 after = time.time()
 print((after - before)/num_of_searches)
-# this is comment for commit testing
