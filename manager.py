@@ -143,7 +143,7 @@ class manager:
             pdf.cell(200, 10, txt=f"Doc ID: {doc_Id}", ln=1, align="C")
             pdf.ln()       
             # since we are dealing with hebrew the way the text was represented was very messed up so we had 
-            # do a few tricks to represent the text nicely
+            # do a few tricks to represent the text nicely in a way that as correct for hebrew
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
             text = text.split()
@@ -182,7 +182,8 @@ class manager:
     # we didn't think there was enough dat in them to compare them to other documents
     # you can change the size of what is cut out by changing min_size
     # we take out the title because a lot of the time the title is just the name of the author which
-    # doesn't give any useful info about the topic of the document
+    # doesn't give any useful info about the topic of the document. If you want to use the title uncomment 
+    # out the two lines we have about the title below
     def combine_files(self, directory):
         min_size = 150
         fileNames = os.listdir(directory)
@@ -193,16 +194,17 @@ class manager:
             f = open(directory + fileName, "rb")
             text = f.read()
             full_text = text.decode("cp1255", errors="ignore")
-
+            
+#           we printed something out every time 100 files were added to the dataframe so we could know our code was running smoothly
             if(count % 100 == 0):
                 print("Processing Document: " + str(count))
             count += 1
 
-            # length_of_doc = len(full_text)
+#             we noticed that in all the tshuvos paragraphs are seperated by @ signs 
+#             so we split the text into different paragraphs every time there was an @ sign
             text_array = full_text.split("@")
             paragraph_count = 1
             # title = ""
-            # paragraph_list = list()
             for paragraph in text_array:
                 if paragraph_count == 1:
                     # title = paragraph.split("\r\n", 1)[:1]
@@ -210,7 +212,7 @@ class manager:
                 else:
                     paragraph = paragraph.split("\r\n", 1)[:]
 
-                if len(paragraph[0]) > min_size:  # what number should this be to take out small paragraphs that don't mean anything
+                if len(paragraph[0]) > min_size: 
                     theRebbe.addParagraph(paragraph[0], fileName,"discard")
                 paragraph_count += 1
 
