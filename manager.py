@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 import time
 import fpdf
-from rabtokenizer import RabbinicTokenizer
+#from rabtokenizer import RabbinicTokenizer
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -221,7 +221,7 @@ class manager:
     # you can gebnerate for a specific ubset of the data by changing the start and end values.
     # you must first add the model in the add_model function above to then use this.
     # model must be the exact same name you used when adding the model
-    def generate_embeddings(self, model, startValue, end):
+    def generate_embeddings(self, prefix, model, startValue, end):
         alephbert_tokenizer = None
         alephbert = None
         if model == "1AlphaBert":
@@ -232,7 +232,7 @@ class manager:
             alephbert = BertModel.from_pretrained("ysnow9876/alephbert-base-finetuned-for-shut")
         # alephbert.eval()
         counter = 0
-        for id in theRebbe.getParagraphIDs():
+        for id in tqdm(theRebbe.getParagraphIDs()):
             if id >= startValue:
                 text = theRebbe.getParagraph(id)['paragraph_text']
                 input = alephbert_tokenizer(text, return_tensors="pt", truncation=True, max_length=512, padding="max_length")
@@ -246,12 +246,12 @@ class manager:
 #                 save the dataframe every time we generate 5000 more embeddings so that we don't have to restart completely if we stop in middle
                 if(counter % 5000 == 0 and counter != startValue and counter != 0):
                     # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-                    theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
+                    theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
                 counter += 1
                 
                 if counter == end:
-                    theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-                    theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
+                    theRebbe.exportCSV(prefix+"all_paragraphs_final"+model+".csv")
+                    theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
                     break
 
         # called by search - finds the paragraphs that are most topically similar 
@@ -338,13 +338,13 @@ class manager:
 # Create a Test Manager Class
 theRebbe = manager()
 model = "1AlphaBert"
-dataframe = "all_paragraphs_final1AlphaBert.pkt"
+dataframe = "documents_250+250_1AlphaBert.pkt"
 directory = "home/..."
 theRebbe.loadDataFrame(dataframe)
 
-bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
-tokenizer = RabbinicTokenizer(BertTokenizer.from_pretrained(os.path.join(bert_path, 'vocab.txt')))
-model = BertForMaskedLM.from_pretrained(bert_path)
+# bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
+# tokenizer = RabbinicTokenizer(BertTokenizer.from_pretrained(os.path.join(bert_path, 'vocab.txt')))
+# model = BertForMaskedLM.from_pretrained(bert_path)
 
 # theRebbe.add_local_paragraph_ids()
 
@@ -353,17 +353,17 @@ model = BertForMaskedLM.from_pretrained(bert_path)
 
 # start = 0
 # end = 100_000
-# theRebbe.generate_embeddings(model, start, end)
+# theRebbe.generate_embeddings("documents_250+250",model, start, end)
 
-# x = 0
-# before = time.time()
-# num_of_searches = 30
-# while x < num_of_searches:
-#     # theRebbe.loadDataFrame(dataframe)
-#     results1 = theRebbe.search(model,x,10)
-#     theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
-#     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-#     x+=1
+x = 0
+before = time.time()
+num_of_searches = 30
+while x < num_of_searches:
+    # theRebbe.loadDataFrame(dataframe)
+    results1 = theRebbe.search(model,x,10)
+    theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
+    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
+    x+=1
 
-# after = time.time()
-# print((after - before)/num_of_searches)
+after = time.time()
+print((after - before)/num_of_searches)
