@@ -367,15 +367,8 @@ class manager:
 # Create a Test Manager Class
 theRebbe = manager()
 model = "1AlphaBert"
-<<<<<<< HEAD
 dataframe = "documents_250+250_1AlphaBert.pkt"
-=======
-<<<<<<< HEAD
 directory = "/home/jacob/code/responaProjectReccomender/Data/"
-=======
-dataframe = "all_paragraphs_final1AlphaBert.pkt"
->>>>>>> e5ca4b4e1df110a20c97139b8a2dcd7fe8bf43d7
-directory = "home/..."
 theRebbe.loadDataFrame(dataframe)
 
 # bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
@@ -386,7 +379,6 @@ theRebbe.loadDataFrame(dataframe)
 
 #theRebbe.combine_files(directory)
 #theRebbe.addModel(model,duplicates='discard')
->>>>>>> 5feea106aa3e35d77b68e94e11cdfc51dcbc528b
 
 # # theRebbe.generate_datafrane_per_document(directory)
 # theRebbe.loadDataFrame("documents_250+250.pkt")
@@ -394,7 +386,6 @@ theRebbe.loadDataFrame(dataframe)
 # #theRebbe.combine_files(directory)
 # theRebbe.addModel(model,duplicates='discard')
 # start = 0
-<<<<<<< HEAD
 # end = 26801
 # theRebbe.generate_embeddings(model, 0, 5360)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
@@ -416,25 +407,8 @@ theRebbe.loadDataFrame(dataframe)
 #     results1 = theRebbe.search(model,x,10)
 #     theRebbe.createPDF(results1, f"documents_250+250_{model}_find10_"+str(x)+".pdf")
 #     x+=1
-=======
 # end = 100_000
-<<<<<<< HEAD
 # theRebbe.generate_embeddings("documents_250+250",model, start, end)
-
-x = 0
-before = time.time()
-num_of_searches = 30
-while x < num_of_searches:
-    # theRebbe.loadDataFrame(dataframe)
-    results1 = theRebbe.search(model,x,10)
-    theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
-    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-    x+=1
-
-after = time.time()
-print((after - before)/num_of_searches)
-=======
-# theRebbe.generate_embeddings(model, start, end)
 
 # x = 0
 # before = time.time()
@@ -442,11 +416,11 @@ print((after - before)/num_of_searches)
 # while x < num_of_searches:
 #     # theRebbe.loadDataFrame(dataframe)
 #     results1 = theRebbe.search(model,x,10)
-#     theRebbe.createPDF(results1, f"all_paragraphs_final{model}_find10_"+str(x)+".pdf")
+#     theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
 #     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
 #     x+=1
 
->>>>>>> 5feea106aa3e35d77b68e94e11cdfc51dcbc528b
 # after = time.time()
 # print((after - before)/num_of_searches)
->>>>>>> e5ca4b4e1df110a20c97139b8a2dcd7fe8bf43d7
+# after = time.time()
+# print((after - before)/num_of_searches)
