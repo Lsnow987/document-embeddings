@@ -178,7 +178,9 @@ class manager:
         print("PDF Created")
         return "distances.pdf"
 
-    # in order to use the responsa data to fine tune the bert model we had to combine all of the shut into one dataframe
+    # in order to use the responsa data to fine tune the bert model we had to combine all of the sheilos utshuvos into one dataframe
+    # we do this in three different ways. I will explain eah way in its proper place.
+    # The first way is via the function generate_dataframe_standard
     # we put each paragraph into a different row in the dataframe
     # directory is the directory where the all the data was stored
     # we didn't include any paragraph under 150 charachters because 
@@ -187,6 +189,8 @@ class manager:
     # we take out the title because a lot of the time the title is just the name of the author which
     # doesn't give any useful info about the topic of the document. If you want to use the title uncomment 
     # out the two lines we have about the title below
+
+    # 
     def generate_datafrane_standard(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -220,6 +224,10 @@ class manager:
                     theRebbe.addParagraph(paragraph[0], fileName,"discard")
                 paragraph_count += 1
 
+    # The second way we generate a dataframe is via the function generate_dataframe_per_document
+    # we put in the first 250 tokens of the first paragraph in the document and last 250 of the last 
+    # paragraph in the document in order to get a general idea of the topic of the document
+    # we use this in conjuction with the similarity scores of each individual paragraph
     def generate_datafrane_per_document(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -243,7 +251,11 @@ class manager:
 
             theRebbe.addParagraph(final_text[0], fileName,"discard")
 
-    
+    # The third way we generate a dataframe is via the function generate_dataframe_per_100
+    # We were given a model from bar ilan that was trained on religious texts but the maximum
+    # size the model could handle was 128 tokens. 128 tokens is not enough to hold a whole paragraph
+    # so we divided the data into groups of sentences of 100 words which would have around 128 tokens 
+    # and put each group of sentences as a different row in the dataframe.
     def generate_datafrane_per_100(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
