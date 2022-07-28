@@ -308,7 +308,7 @@ class manager:
         #Returning the top count results
         return distances.iloc[:(count+1)]
     
-#     this function addas a new column to the dataframe - which is necessary for running search.
+#     this function adds a new column to the dataframe - which is necessary for running search.
 #     it allows us to exclude paragraphs from the same document as the paragraph we are searching for from our search.
     def add_local_paragraph_ids(self):
         # theRebbe.addModel("localParagraphId")
