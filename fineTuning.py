@@ -13,13 +13,12 @@ from transformers import get_scheduler
 from huggingface_hub import Repository
 from tqdm.auto import tqdm
 import torch
+# keeping as much space open in ram as possible since we had limited ram
 torch.cuda.empty_cache()
 import math
 
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
-
-
 
 # name of original model we trained 
 model_checkpoint = "onlplab/alephbert-base"
@@ -61,7 +60,7 @@ def insert_random_mask(batch):
 # the name of our file was test1.csv - replace this name with the name of your file
 data_files = {"train": "test_1.csv"}
 test_set = load_dataset("csv", data_files=data_files)
-
+# get rid of any wierd text in our shut that would confuse the model
 test_set = test_set.map(lambda x: {"paragraph_text": html.unescape(x["paragraph_text"])})
 
 tokenized_datasets = test_set.map(
@@ -82,15 +81,15 @@ data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probabi
 train_size = math.floor(471891*.85) # change for actual amount
 test_size = math.floor(471891*.15)
 
-downsampled_dataset = lm_datasets["train"].train_test_split(
+full_dataset = lm_datasets["train"].train_test_split(
     train_size=train_size, test_size=test_size, seed=42
 )
 
-downsampled_dataset = downsampled_dataset.remove_columns(["word_ids"])
-eval_dataset = downsampled_dataset["test"].map(
+full_dataset = full_dataset.remove_columns(["word_ids"])
+eval_dataset = full_dataset["test"].map(
     insert_random_mask,
     batched=True,
-    remove_columns=downsampled_dataset["test"].column_names,
+    remove_columns=full_dataset["test"].column_names,
 )
 
 eval_dataset = eval_dataset.rename_columns(
@@ -107,7 +106,7 @@ print(eval_dataset)
 # we used batch_size = 16 to not go over ram limits
 batch_size = 16  
 train_dataloader = DataLoader(
-    downsampled_dataset["train"],
+    full_dataset["train"],
     shuffle=True,
     batch_size=batch_size,
     collate_fn=data_collator,
