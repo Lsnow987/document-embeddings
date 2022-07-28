@@ -1,3 +1,4 @@
+# some of the code was either taken from here: https://huggingface.co/course/chapter7/3?fw=tf or modified and then used
 import html
 import numpy as np
 import pandas as pd
@@ -20,17 +21,20 @@ writer = SummaryWriter()
 
 
 
-
+# name of original model we trained 
 model_checkpoint = "onlplab/alephbert-base"
+# make this code run on a gpu if you have one to train much faster
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint).to("cuda")
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
+# tokenization function to turn the text into tokens
 def tokenize_function(paragraphs):
     result = tokenizer(paragraphs["paragraph_text"])
     if tokenizer.is_fast:
         result["word_ids"] = [result.word_ids(i) for i in range(len(result["input_ids"]))]
     return result
 
+# group the texts into groups the size of chunk_size - for us that was 128
 def group_texts(paragraphs):
     # Concatenate all texts
     concatenated_examples = {k: sum(paragraphs[k], []) for k in paragraphs.keys()}
@@ -47,51 +51,34 @@ def group_texts(paragraphs):
     result["labels"] = result["input_ids"].copy()
     return result
 
+# insert random mask in the data in order to later have the model try to predict the word and learn from mistakes
 def insert_random_mask(batch):
     features = [dict(zip(batch, t)) for t in zip(*batch.values())]
     masked_inputs = data_collator(features)
     # Create a new "masked" column for each column in the dataset
     return {"masked_" + k: v.numpy() for k, v in masked_inputs.items()}
 
-# df = pd.read_csv('test_no_commas.csv',encoding_errors='ignore', quoting=3, engine='python')
-# df['split'] = np.random.randn(df.shape[0], 1)
-
-# msk = np.random.rand(len(df)) <= 0.70
-# train = df[msk]
-# train.to_csv("train.csv")
-# testAndVal = df[~msk]
-
-# msk = np.random.rand(len(testAndVal)) <= 0.50
-# test = testAndVal[~msk]
-# val = testAndVal[msk]
-# test.to_csv("testing.csv")
-# val.to_csv("validation.csv")
-
-
-
-# data_files = {"train": "train.csv", "validation": "validation.csv", "test": "testing.csv"}
+# the name of our file was test1.csv - replace this name with the name of your file
 data_files = {"train": "test_1.csv"}
 test_set = load_dataset("csv", data_files=data_files)
 
 test_set = test_set.map(lambda x: {"paragraph_text": html.unescape(x["paragraph_text"])})
 
-# Use batched=True to activate fast multithreading!
-# "split", "1AlphaBert",
 tokenized_datasets = test_set.map(
     tokenize_function, batched=True, remove_columns=["Unnamed: 0", "document_id", "length", 
                                                       "paragraph_text", "paragraph_id"]
 )
-
-chunk_size = 128 #what do we want to make the chunk size - will use more ram if use a bigger chunk size
+# we did not have enough ram to make a bigger chunck_size - if you have more ram you can make it bigger
+chunk_size = 128 
 
 lm_datasets = tokenized_datasets.map(group_texts, batched=True)
 print(lm_datasets)
 
+# we masked 15 percent of the words to train the model - you can mask more or less by changing the number .15
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-
-
-#we prob won't actually be using this because we already did a train,validation,test set split
+# we did an 85 to 15 train/test split
+# change this number to the number of rows that come out depending on your chunk_size
 train_size = math.floor(471891*.85) # change for actual amount
 test_size = math.floor(471891*.15)
 
@@ -117,8 +104,8 @@ eval_dataset = eval_dataset.rename_columns(
 
 print(eval_dataset)
 
-
-batch_size = 16  # what do we want this to be?
+# we used batch_size = 16 to not go over ram limits
+batch_size = 16  
 train_dataloader = DataLoader(
     downsampled_dataset["train"],
     shuffle=True,
