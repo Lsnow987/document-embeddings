@@ -142,7 +142,7 @@ class manager:
             
             pdf.cell(200, 10, txt=f"Doc ID: {doc_Id}", ln=1, align="C")
             pdf.ln()       
-            #  since we are dealing with hebrew the way the text was represented was very messed up so we had 
+            # since we are dealing with hebrew the way the text was represented was very messed up so we had 
             # do a few tricks to represent the text nicely
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
@@ -237,13 +237,11 @@ class manager:
                 output = alephbert(**input)
                 enncoding = output.last_hidden_state[0,0,:]
 
-
-                #TODO I'm not sure what to do because the embedding are not the same size
                 theRebbe.addParagraphEmbedings(model,{id:enncoding.detach().numpy()})
 
                 if(counter % 100 == 0):
                     print(counter)
-
+#                 save the dataframe every time we generate 5000 more embeddings so that we don't have to restart completely if we stop in middle
                 if(counter % 5000 == 0 and counter != startValue and counter != 0):
                     # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
                     theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
@@ -266,8 +264,8 @@ class manager:
         all_info = theRebbe.getParagraph(paragraphID)
         doc_id = all_info[2]
         searchMe = self.paragraphs_df.copy()
-        # print(searchMe)
-        # time.sleep(1)
+#         dropped is an int representing how many paragraphs were part of the same document as the original paragraph 
+#         and are therefore not included in the search for similar paragraphs
         global dropped
         dropped = 0
         for index, row in searchMe.iterrows():
@@ -275,14 +273,13 @@ class manager:
                 searchMe.drop(index, inplace=True, axis='index')
                 dropped += 1
 
-        # searchMe.drop(searchMe[searchMe['document_id'] == doc_id].index, inplace=True)
-
         print("Calculating Distances")
         #Calculating the distance between the embedding and the other embeddings
-        
+#         since we only generated around 67000 paragraph embeddings using a batch size of 1024 with 66 batches got through all of them
+#         these numbers should be changed depending on how many paragraph embeddings you have.
         batch_size = 1024
         num_rows = searchMe.shape[0]
-        num_batches = 66 #math.ceil(num_rows / batch_size)
+        num_batches = 66 
 
         #Create a Series
         df = pd.DataFrame(columns=[])
@@ -308,7 +305,9 @@ class manager:
         
         #Returning the top count results
         return distances.iloc[:(count+1)]
-
+    
+#     this function addas a new column to the dataframe - which is necessary for running search.
+#     it allows us to exclude paragraphs from the same document as the paragraph we are searching for from our search.
     def add_local_paragraph_ids(self):
         # theRebbe.addModel("localParagraphId")
         counter = 0
