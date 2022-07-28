@@ -122,7 +122,8 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
     model, optimizer, train_dataloader, eval_dataloader
 )
 
-num_train_epochs = 2
+# we did 3 epochs of training - you can change this number to do more or less training
+num_train_epochs = 3
 num_update_steps_per_epoch = len(train_dataloader)
 num_training_steps = num_train_epochs * num_update_steps_per_epoch
 
@@ -132,7 +133,6 @@ lr_scheduler = get_scheduler(
     num_warmup_steps=0,
     num_training_steps=num_training_steps,
 )
-
 
 from huggingface_hub import get_full_repo_name
 model_name = "alephbert-base-finetuned-for-shut"
@@ -176,12 +176,12 @@ for epoch in range(num_train_epochs):
         perplexity = math.exp(torch.mean(losses))
     except OverflowError:
         perplexity = float("inf")
-
+#     we evaluated our model using perplexity scores 
     print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
     writer.add_scalar("Perplexity", perplexity, batch_num)
 
 
-    # Save and upload
+    # Save and upload to hugging face hub
     accelerator.wait_for_everyone()
     unwrapped_model = accelerator.unwrap_model(model)
     unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
