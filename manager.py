@@ -219,7 +219,7 @@ class manager:
             text_array = full_text.split(" ")
             final_text = " ".join(text_array[0:250]) + "..." + " ".join(text_array[-250:])
 
-            theRebbe.addParagraph(final_text[0], fileName,"discard")
+            theRebbe.addParagraph(final_text, fileName,"discard")
 
     def generate_datafrane_per_100(self, directory):
         #  Now Let's Read the Documents
@@ -244,7 +244,7 @@ class manager:
             chunks = [text_array[i:i + n] for i in range(0, len(text_array), n)]
             for chunk in chunks:
                 final_text = " ".join(chunk)
-                theRebbe.addParagraph(final_text[0], fileName,"discard")
+                theRebbe.addParagraph(final_text, fileName,"discard")
 
     # generate the embedding for each paragraph for a specific model
     # you can gebnerate for a specific ubset of the data by changing the start and end values.
@@ -255,18 +255,18 @@ class manager:
         alephbert = None
         if model == "1AlphaBert":
             alephbert_tokenizer = BertTokenizerFast.from_pretrained('onlplab/alephbert-base')
-            alephbert = BertModel.from_pretrained('onlplab/alephbert-base')
+            alephbert = BertModel.from_pretrained('onlplab/alephbert-base').to("cuda")
         else:
             alephbert_tokenizer = BertTokenizerFast.from_pretrained("ysnow9876/alephbert-base-finetuned-for-shut")
-            alephbert = BertModel.from_pretrained("ysnow9876/alephbert-base-finetuned-for-shut")
+            alephbert = BertModel.from_pretrained("ysnow9876/alephbert-base-finetuned-for-shut").to("cuda")
         # alephbert.eval()
         counter = 0
         for id in tqdm(theRebbe.getParagraphIDs()):
             if id >= startValue:
                 text = theRebbe.getParagraph(id)['paragraph_text']
-                input = alephbert_tokenizer(text, return_tensors="pt", truncation=True, max_length=512, padding="max_length")
+                input = alephbert_tokenizer(text, return_tensors="pt", truncation=True, max_length=512, padding="max_length").to("cuda")
                 output = alephbert(**input)
-                enncoding = output.last_hidden_state[0,0,:]
+                enncoding = output.last_hidden_state[0,0,:].cpu()
 
 
                 #TODO I'm not sure what to do because the embedding are not the same size
@@ -310,9 +310,9 @@ class manager:
         print("Calculating Distances")
         #Calculating the distance between the embedding and the other embeddings
         
-        batch_size = 1024
+        batch_size = 1
         num_rows = searchMe.shape[0]
-        num_batches = 66 #math.ceil(num_rows / batch_size)
+        num_batches = 26000 #math.ceil(num_rows / batch_size)
 
         #Create a Series
         df = pd.DataFrame(columns=[])
@@ -323,16 +323,20 @@ class manager:
             end = min((i + 1) * batch_size, num_rows)
             batch = searchMe.iloc[start:end]
             batch_embeddings = batch[model].values
-
-            batch_embeddings=np.vstack(batch_embeddings).astype(np.float64)
-            batch_embeddings = torch.from_numpy(batch_embeddings)
+            try:
+                batch_embeddings=np.vstack(batch_embeddings).astype(np.float64)
+                batch_embeddings = torch.from_numpy(batch_embeddings)
             
-            batch_embeddings = batch_embeddings - torch.tensor(embedding)
-            batch_embeddings = torch.norm(batch_embeddings, p=2, dim=1)
-    
-            new = pd.Series(batch_embeddings.numpy())
+                batch_embeddings = batch_embeddings - torch.tensor(embedding)
+                batch_embeddings = torch.norm(batch_embeddings, p=2, dim=1)
+        
+                new = pd.Series(batch_embeddings.numpy())
+            except:
+                print("error")
+            
 
             distances = pd.concat([distances, new], axis=0, ignore_index=True)
+           
 
         distances = distances.sort_values()
         
@@ -366,11 +370,15 @@ class manager:
 
 # Create a Test Manager Class
 theRebbe = manager()
-model = "1AlphaBert"
+model = "2alephbert-base-finetuned"
 dataframe = "documents_250+250_1AlphaBert.pkt"
 directory = "/home/jacob/code/responaProjectReccomender/Data/"
-theRebbe.loadDataFrame(dataframe)
+theRebbe.loadDataFrame("documents_250+250_"+model+".pkt")
+# theRebbe.exportCSV("250+250.csv")
 
+
+# theRebbe.generate_datafrane_per_document(directory)
+# theRebbe.exportCSV("250+250.csv")
 # bert_path = "C:/Users/ysnow/OneDrive/Desktop/python/Berel/"
 # tokenizer = RabbinicTokenizer(BertTokenizer.from_pretrained(os.path.join(bert_path, 'vocab.txt')))
 # model = BertForMaskedLM.from_pretrained(bert_path)
@@ -381,24 +389,27 @@ theRebbe.loadDataFrame(dataframe)
 #theRebbe.addModel(model,duplicates='discard')
 
 # # theRebbe.generate_datafrane_per_document(directory)
-# theRebbe.loadDataFrame("documents_250+250.pkt")
+# theRebbe.loadDataFrame("documents_250+250_1AlphaBert.pkt")
 # print(theRebbe.paragraphs_df.shape)
 # #theRebbe.combine_files(directory)
 # theRebbe.addModel(model,duplicates='discard')
 # start = 0
 # end = 26801
-# theRebbe.generate_embeddings(model, 0, 5360)
+# theRebbe.addModel(model)
+# theRebbe.generate_embeddings("documents_250+250_",model, 0, 5360)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings(model, 5361, 10720)
+# theRebbe.generate_embeddings("documents_250+250_",model, 5361, 10720)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings(model, 10721, 16080)
+# theRebbe.generate_embeddings("documents_250+250_",model, 10721, 16080)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings(model, 16081, 21440)
+# theRebbe.generate_embeddings("documents_250+250_",model, 16081, 21440)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings(model, 21441, 26801)
+# theRebbe.generate_embeddings("documents_250+250_",model, 21441, 26801)
 # theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
 
-
+# print(theRebbe.paragraphs_df)
+# theRebbe.exportCSV("250+250_1aph.csv")
+# model = "1AlphaBert"
 # x = 0
 # before = time.time()
 # num_of_searches = 6
@@ -410,17 +421,17 @@ theRebbe.loadDataFrame(dataframe)
 # end = 100_000
 # theRebbe.generate_embeddings("documents_250+250",model, start, end)
 
-# x = 0
-# before = time.time()
-# num_of_searches = 30
-# while x < num_of_searches:
-#     # theRebbe.loadDataFrame(dataframe)
-#     results1 = theRebbe.search(model,x,10)
-#     theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
-#     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-#     x+=1
+x = 0
+before = time.time()
+num_of_searches = 30
+while x < num_of_searches:
+    # theRebbe.loadDataFrame(dataframe)
+    results1 = theRebbe.search(model,x,10)
+    theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
+    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
+    x+=1
 
 # after = time.time()
 # print((after - before)/num_of_searches)
-# after = time.time()
+# # after = time.time()
 # print((after - before)/num_of_searches)
