@@ -1,17 +1,11 @@
-from sqlite3 import Row
-from time import time
-from turtle import distance
-from xmlrpc.client import DateTime
 import pandas as pd
 import os
 import numpy as np
-import math
 from transformers import BertModel, BertTokenizerFast, BertTokenizer, BertForMaskedLM
 import torch
 from tqdm import tqdm
 import time
 import fpdf
-# from unidecode import unidecode
 # from rabtokenizer import RabbinicTokenizer
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -22,16 +16,20 @@ class manager:
     # Constructor - no filepath
     def __init__(self):
         self.paragraphs_df = pd.DataFrame(columns=['paragraph_id', 'paragraph_text', 'document_id','length']).astype('object')
-
+    
+    # if you saved the dataframe as a csv file, you can load it here
     def loadCSV(self, filePath):
-        self.paragraphs_df = pd.read_csv(filePath, index_col=0) #encoding_errors='ignore'
+        self.paragraphs_df = pd.read_csv(filePath, index_col=0) 
 
+     # if you saved the dataframe as a pickle file, you can load it here
     def loadDataFrame(self, filePath):
         self.paragraphs_df = pd.read_pickle(filePath)
 
+    # check if there is a column already for this model
     def doesModelExist(self,name):
         return(name in self.paragraphs_df.columns)
 
+    # add a new model to the dataframe
     def addModel(self, name, duplicates="yell"):
         if(self.paragraphs_df.shape[0] == 0):
             raise Exception("No paragraphs to add model to, please add paragraphs first")
@@ -45,6 +43,8 @@ class manager:
         self.paragraphs_df = pd.concat([self.paragraphs_df, ser.rename(name)], axis=1)
         return name
 
+    # get paragraph embeddings for the given model 
+    # called by generate_Embeddings to actually get the embeddings for a specific subset or all of the paragraphs
     def addParagraphEmbedings(self, model_name, paragraph_id_embeding_dictionary):
         ser = self.paragraphs_df[model_name]
         for paragraph_id, embedding in paragraph_id_embeding_dictionary.items():
@@ -52,6 +52,7 @@ class manager:
         self.paragraphs_df[model_name] = ser
         return model_name
 
+    # add a paragraph to the dataframe - called by combine_files to combine all the files of shut into one dataframe
     def addParagraph(self, paragraph_text, document_id, duplicates="yell"):
         if(duplicates != "ignore" and self.doesParagraphExist(paragraph_text,document_id)):
             if(duplicates == 'discard'):
@@ -61,30 +62,41 @@ class manager:
         self.paragraphs_df.loc[paragraph_id] = [paragraph_id, paragraph_text, document_id, len(paragraph_text)] + [0] * (len(self.paragraphs_df.columns)-4)
         return paragraph_id
 
+    # check if the specific paragraph exists in the dataframe
     def doesParagraphExist(self, paragraph_text, document_id):
         return paragraph_text in self.paragraphs_df['paragraph_text'] 
 
+    # get all the information about a specific paragraph 
+    # we are getting a row from the dataframe - to access a specific attribute of the paragraph you must acces that column in this row
     def getParagraph(self, paragraph_id):
         return self.paragraphs_df.loc[paragraph_id]
 
-    def getParagraphSmall(self, paragraph_id):
-        return self.paragraphs_df.loc[paragraph_id]
-
+    # return a list of all the paragraph ids in the dataframe
     def getParagraphIDs(self):
         return self.paragraphs_df['paragraph_id'].tolist()
 
+    # return all the paragraphs in a specific document
     def getParagraphsByDocument(self, document_id):
         return self.paragraphs_df[self.paragraphs_df['document_id'] == document_id]['paragraph_id'].tolist()
 
+    # export the dataframe to a csv file
     def exportCSV(self, filePath):
         self.paragraphs_df.to_csv(filePath)
 
+    # export the dataframe to a pickle file
     def exportDataFrame(self, filePath):
         self.paragraphs_df.to_pickle(filePath)
 
+    # get the embedding for a specific paragraph 
     def getEmbeding(self,paragraphID,model):
         return self.paragraphs_df.at[paragraphID,model]
 
+    # search for the paragraphs that are most similar to the paragraphId you pass in.
+    # count is the number of results you want
+    # model is the model you want to use.
+    # for example do you want to use the embeddings from the original model or the finetuned model 
+    # you must pass in the name of the model exactly as it is stored in the dataframe
+    # this will also create a pdf by calling create pdf - the pdf will be explained below
     def search(self, model, paragraphID, count):
         global first_id 
         global first_doc_id
@@ -95,6 +107,13 @@ class manager:
         print(self.getParagraph(paragraphID))
         return self.findClosest(self.getEmbeding(paragraphID,model),paragraphID, model, count)
 
+    # create a pdf of the search results - called by search
+    # the first paragraph will be the paragraph you searched for.
+    # the rest of the paragraphs will be the search results going from most similar to least similar.
+    # The document Id, paragraph Id, and distances are put on top of each paragraph in the pdf
+    # given that we are dealing with hebrew not all fonts worked - we used the DejaVuSansCondensed
+    # font. that ttf file for that font is on our github. you must replace DejaVuSansCondensed.ttf
+    # on line 20 with the path to where the font is saved unless you have it saved in the same directory as your code
     def createPDF(self, distances, filename):
 
         pdf = fpdf.FPDF()
@@ -114,30 +133,20 @@ class manager:
             getParagraph = self.getParagraph(currId)
             doc_Id = getParagraph['document_id']
 
-            # counter = 0
-            # for index, rows in self.paragraphs_df.iterrows():
-            #     if(rows['document_id'] == doc_Id):
-            #         # if row['paragraph_id'] == first_id:
-            #         break
-            #     else:
-            #         counter+=1    
-
             if(doc_Id == first_doc_id):
                 local_id = getParagraph["localParagraphId"]
-                # if(local_id == counter):
-                #     print("EQUALS")
-                # print("local id: "+str(local_id))
-                # print("counter: "+ str(counter))
-                currId = (currId + first_id - local_id) #currId + local_id #(first_id - counter)
+                currId = (currId + first_id - local_id)
 
-            
             pdf.cell(200, 10, txt=f"Paragraph ID: {currId}", ln=1, align="C")
             pdf.ln()
             pdf.cell(200, 10, txt=f"Paragraph Distance: {distances[row]}", ln=1, align="C")
             pdf.ln()            
             
             pdf.cell(200, 10, txt=f"Doc ID: {doc_Id}", ln=1, align="C")
-            pdf.ln()            
+            pdf.ln() 
+
+            # since we are dealing with hebrew the way the text was represented was very messed up so we had 
+            # do a few tricks to represent the text nicely in a way that as correct for hebrew           
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
             text = text.split()
@@ -145,6 +154,7 @@ class manager:
             line_index = 0
             new_line = ""
             for word in text:
+                # we used a length of 70 charachters per line - you can make this longer or shorter
                 if(line_index < 70):
                     new_line = new_line + word + " "
                     line_index = line_index + len(word) + 1
@@ -162,10 +172,25 @@ class manager:
             new_line = " ".join(new_line)
             pdf.cell(0, 10, txt=new_line, align="R")
             pdf.ln()
+        # right now the pdf outputs to the directory where the code is - if you want to output it to a specific directory
+        # you will have to include that in the next line
         pdf.output(filename, "F")
         print("PDF Created")
         return "distances.pdf"
 
+    # in order to use the responsa data to fine tune the bert model we had to combine all of the sheilos utshuvos into one dataframe
+    # we do this in three different ways. I will explain eah way in its proper place.
+    # The first way is via the function generate_dataframe_standard
+    # we put each paragraph into a different row in the dataframe
+    # directory is the directory where the all the data was stored
+    # we didn't include any paragraph under 150 charachters because 
+    # we didn't think there was enough dat in them to compare them to other documents
+    # you can change the size of what is cut out by changing min_size
+    # we take out the title because a lot of the time the title is just the name of the author which
+    # doesn't give any useful info about the topic of the document. If you want to use the title uncomment 
+    # out the two lines we have about the title below
+
+    # 
     def generate_datafrane_standard(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -183,10 +208,11 @@ class manager:
             count += 1
 
             # length_of_doc = len(full_text)
+            #  we noticed that in all the tshuvos paragraphs are seperated by @ signs 
+            #  so we split the text into different paragraphs every time there was an @ sign
             text_array = full_text.split("@")
             paragraph_count = 1
             # title = ""
-            # paragraph_list = list()
             for paragraph in text_array:
                 if paragraph_count == 1:
                     # title = paragraph.split("\r\n", 1)[:1]
@@ -194,10 +220,14 @@ class manager:
                 else:
                     paragraph = paragraph.split("\r\n", 1)[:]
 
-                if len(paragraph[0]) > 150:  # what number should this be to take out small paragraphs that don't mean anything
+                if len(paragraph[0]) > 150:  
                     theRebbe.addParagraph(paragraph[0], fileName,"discard")
                 paragraph_count += 1
 
+    # The second way we generate a dataframe is via the function generate_dataframe_per_document
+    # we put in the first 250 tokens of the first paragraph in the document and last 250 of the last 
+    # paragraph in the document in order to get a general idea of the topic of the document
+    # we use this in conjuction with the similarity scores of each individual paragraph
     def generate_datafrane_per_document(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -221,6 +251,11 @@ class manager:
 
             theRebbe.addParagraph(final_text, fileName,"discard")
 
+    # The third way we generate a dataframe is via the function generate_dataframe_per_100
+    # We were given a model from bar ilan that was trained on religious texts but the maximum
+    # size the model could handle was 128 tokens. 128 tokens is not enough to hold a whole paragraph
+    # so we divided the data into groups of sentences of 100 words which would have around 128 tokens 
+    # and put each group of sentences as a different row in the dataframe.
     def generate_datafrane_per_100(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -271,7 +306,7 @@ class manager:
 
                 #TODO I'm not sure what to do because the embedding are not the same size
                 theRebbe.addParagraphEmbedings(model,{id:enncoding.detach().numpy()})
-
+                # save the dataframe every time we generate 1000 more embeddings so that we don't have to restart completely if we stop in middle
                 if(counter % 1000 == 0):
                     print(counter)
 
@@ -285,7 +320,8 @@ class manager:
                     theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
                     break
 
-
+        # called by search - finds the paragraphs that are most topically similar 
+        # to the paragraph that was searched for.
     def findClosest(self, embedding, paragraphID, model, count):
 
         # Make sure that we don't ask for more data than in the dataset
@@ -298,14 +334,14 @@ class manager:
         searchMe = self.paragraphs_df.copy()
         # print(searchMe)
         # time.sleep(1)
+        #  dropped is an int representing how many paragraphs were part of the same document as the original paragraph 
+        #  and are therefore not included in the search for similar paragraphs
         global dropped
         dropped = 0
         for index, row in searchMe.iterrows():
             if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
                 searchMe.drop(index, inplace=True, axis='index')
                 dropped += 1
-
-        # searchMe.drop(searchMe[searchMe['document_id'] == doc_id].index, inplace=True)
 
         print("Calculating Distances")
         #Calculating the distance between the embedding and the other embeddings
@@ -343,8 +379,10 @@ class manager:
         #Returning the top count results
         return distances.iloc[:(count+1)]
 
+    #  this function adds a new column to the dataframe - which is necessary for running search.
+    #  it allows us to exclude paragraphs from the same document as the paragraph we are searching for from our search.
     def add_local_paragraph_ids(self):
-        # theRebbe.addModel("localParagraphId")
+        theRebbe.addModel("localParagraphId")
         counter = 0
         inner_counter = 0
         initial_doc_id = None
