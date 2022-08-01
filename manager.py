@@ -133,6 +133,9 @@ class manager:
             getParagraph = self.getParagraph(currId)
             doc_Id = getParagraph['document_id']
 
+            # comment out if doing search by 250 first and 250 last tokens of a document and uncomment
+            # out if doing search by paragraph in order not to have paragraphs of the same document
+            # show up in your search results
             if(doc_Id == first_doc_id):
                 local_id = getParagraph["localParagraphId"]
                 currId = (currId + first_id - local_id)
