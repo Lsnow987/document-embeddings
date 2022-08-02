@@ -20,6 +20,7 @@ import math
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
+notebook_login()
 # name of original model we trained 
 model_checkpoint = "onlplab/alephbert-base"
 # make this code run on a gpu if you have one to train much faster
