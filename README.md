@@ -43,9 +43,6 @@ See information for how to use the model in the Model card there.
 # Basic Code Structure
 
 There are two main files, which are used for this project. 
-
-
-
 * Fine_tuning.py, which is used to train BERT Models, using the hugging face framework. 
 * Manager.py, which contains a manger class, which is used to handle the data, and perform searches
 
@@ -53,21 +50,21 @@ There are two main files, which are used for this project.
 
 ## Requirements
 
-To install all dependencies required run pip3 install -r requirements.txt
+To install all dependencies required run `pip3 install -r requirements.txt`
 
 ## Generating Dataframe
 
 
 
-    * Make sure that all the text is stored using ‘cp1255’ encoding, and all document names are valid integers, and stored in the same folder.
-    *  The manager.py contains 3 different methods of generating dataframes:
-        * Generate_datafrane_standard: each paragraph is its own row
-        * calling generate_dataframe_per_document: each document will be its own row:  The text that will be stored for each document are the first 250 words and last 250 words in the document
-        * Generate_dataframe_per_100:  where each row will consist of 100 words, this is useful when the BERT model being used as a max size of 128 tokens. 
+1. Make sure that all the text is stored using ‘cp1255’ encoding, and all document names are valid integers, and stored in the same folder.
+2. The manager.py contains 3 different methods of generating dataframes:
+        * `generate_datafrane_standard()`: each paragraph is its own row
+        * `generate_dataframe_per_document()`: each document will be its own row:  The text that will be stored for each document are the first 250 words and last 250 words in the document
+        * `generate_dataframe_per_100()`:  where each row will consist of 100 words, this is useful when the BERT model being used as a max size of 128 tokens. 
 
-After generating the dataframe, it can be exported to a .pkt file by calling theRebbe.exportDataFrame(filePath), where theRebbe is an instance of the manager class and filePath is the path to where the file should be stored along with the name ending in .pkt. It can also be exported to a .csv file, which will be helpful for running fineTuning.py, by calling theRebbe.exportCSV(filePath) in the same way. 
+After generating the dataframe, it can be exported to a .pkt file by calling `theRebbe.exportDataFrame(filePath)`, where `theRebbe` is an instance of the manager class and filePath is the path to where the file should be stored along with the name ending in .pkt. It can also be exported to a .csv file, which will be helpful for running fineTuning.py, by calling `theRebbe.exportCSV(filePath)` in the same way. 
 
-Similarly, dataframes and CSV files can be imported using .loadCSV(), and .loadDataFrame() 
+Similarly, dataframes and CSV files can be imported using `.loadCSV()`, and `.loadDataFrame()`
 
 # Fine Tuning The Model:
 
@@ -75,37 +72,37 @@ In order to run fineTuning.py all of the data that the model will be fine-tuned 
 
 Notes:
 
-On line 25 model_checkpoint is set to the name of the pretrained model that is being fine-tuned.
+On line 25 `model_checkpoint` is set to the name of the pretrained model that is being fine-tuned.
 
-Line 23 (notebook_login()) will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: [User access tokens (huggingface.co)](https://huggingface.co/docs/hub/security-tokens). An account is required to make an access token.
+Line 23 (`notebook_login()`) will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: [User access tokens (huggingface.co)](https://huggingface.co/docs/hub/security-tokens). An account is required to make an access token.
 
 Once all of the data is stored in a csv file, fileName on line 61 must be set to the name of the csv file.
 
 The chunk size (how big paragraphs would be passed in when fine-tuning) to 128 tokens on line 72 because of ram limits.
 
-On lines 82-84 the train size was set to 85 percent of the dataset and the test size to 15 percent of the dataset. Replace size_of_dataset with however many rows are in the dataset being used.
+On lines 82-84 the train size was set to 85 percent of the dataset and the test size to 15 percent of the dataset. Replace `size_of_dataset` with however many rows are in the dataset being used.
 
 On line 109 the batch size is set equal to 16 due to ram limits. The number can be made bigger if more ram is available.
 
-On line 128 num_train_epochs is set to 3. The number of epochs can be changed to have more or less epochs.
+On line 128 `num_train_epochs` is set to 3. The number of epochs can be changed to have more or less epochs.
 
-On line 140 mode_name should be set to whatever the name of the fine_tuned model should be.
+On line 140 mode_name should be set to whatever the name of the fine tuned model should be.
 
 ## Generating Embeddings
 
-If the data frame generated was not the dataframe where there is one general embedding for each document, theRebbe.add_local_paragraph_ids()  must be called. This provides useful information that will later be used to prevent a paragraph from the same document as the paragraph being searched for from showing up in the search results.
+If the data frame generated was not the dataframe where there is one general embedding for each document, `theRebbe.add_local_paragraph_ids()`  must be called. This provides useful information that will later be used to prevent a paragraph from the same document as the paragraph being searched for from showing up in the search results.
 
 If the data frame generated was the one that provided general embeddings for each document lines 135-137 which prevent paragraphs from the same document as the paragraph being searched for from appearing in the search results, must be commented out.
 
-After generating the data frames containing all the texts, a column can be added containing the CLS tokens (embeddings that contain information about the paragraph) generated by any BERT model by first calling theRebbe.addModel(“modelName”) where modelName should be whatever the name of the model is. Then theRebbe.generateEmbeddings(prefix, model, startValue, end) should be called. Prefix is whatever the first part of the fileName should be. Model is the name of the model as it was put into theRebbe.addModel. Start is from which row should embeddings start being generated from (generally 0), and end is which row embeddings should stop being generated at (generally the last row).
+After generating the data frames containing all the texts, a column can be added containing the CLS tokens (embeddings that contain information about the paragraph) generated by any BERT model by first calling `theRebbe.addModel(“modelName”)` where modelName should be whatever the name of the model is. Then `theRebbe.generateEmbeddings(prefix, model, startValue, end)` should be called. Prefix is whatever the first part of the fileName should be. Model is the name of the model as it was put into theRebbe.addModel. Start is from which row should embeddings start being generated from (generally 0), and end is which row embeddings should stop being generated at (generally the last row).
 
 ## Searching
 
-Once the embeddings were generated a search can be done by calling theRebbe.search(model, paragraphId, num_of_search_results). This function will return an array of distance, and paragraph ID. Model should be set to whichever model’s embeddings are to be used for the search. ParagraphId is the number id of the paragraph for which similar paragraphs are being searched for. This can be found in the .csv or.pkt file. num_of_search_results is the number of paragraphs that are topically similar that should be returned. 
+Once the embeddings were generated a search can be done by calling `theRebbe.search(model, paragraphId, num_of_search_results)`. This function will return an array of distance, and paragraph ID. Model should be set to whichever model’s embeddings are to be used for the search. ParagraphId is the number id of the paragraph for which similar paragraphs are being searched for. This can be found in the .csv or.pkt file. num_of_search_results is the number of paragraphs that are topically similar that should be returned. 
 
 In order to convert the search results into a pdf containing hebrew text we used the DejaVuSansCondensed font. This font must be installed in order for everything to run smoothly. It can be installed by either downloading the DejaVuSansCondensed.ttf from the github repository or from somewhere else online. Then replace the word DejaVuSansCondensed.ttf on line 120 with the path to the ttf file (or leave it the same if the ttf file is stored in the same directory as the manager class)
 
-This information can be turned into a pdf by calling theRebbe.createPDF(distances, filename). Distances are the results received from running the search. Filename is the directory where the file should be stored and what the filename should be when the pdf is saved.
+This information can be turned into a pdf by calling `theRebbe.createPDF(distances, filename)`. Distances are the results received from running the search. Filename is the directory where the file should be stored and what the filename should be when the pdf is saved.
 
 # Next Steps:
 
