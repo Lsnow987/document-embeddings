@@ -188,8 +188,6 @@ class manager:
     # we take out the title because a lot of the time the title is just the name of the author which
     # doesn't give any useful info about the topic of the document. If you want to use the title uncomment 
     # out the two lines we have about the title below
-
-    # 
     def generate_datafrane_standard(self, directory):
         #  Now Let's Read the Documents
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
@@ -206,7 +204,6 @@ class manager:
 #                 print("Processing Document: " + str(count))
 #             count += 1
 
-            # length_of_doc = len(full_text)
             #  we noticed that in all the tshuvos paragraphs are seperated by @ signs 
             #  so we split the text into different paragraphs every time there was an @ sign
             text_array = full_text.split("@")
@@ -228,8 +225,6 @@ class manager:
     # paragraph in the document in order to get a general idea of the topic of the document
     # we use this in conjuction with the similarity scores of each individual paragraph
     def generate_datafrane_per_document(self, directory):
-        #  Now Let's Read the Documents
-        # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
 
 #         count = 1
@@ -256,8 +251,6 @@ class manager:
     # so we divided the data into groups of sentences of 100 words which would have around 128 tokens 
     # and put each group of sentences as a different row in the dataframe.
     def generate_datafrane_per_100(self, directory):
-        #  Now Let's Read the Documents
-        # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
 
 #         count = 1
@@ -302,16 +295,8 @@ class manager:
                 output = alephbert(**input)
                 enncoding = output.last_hidden_state[0,0,:].cpu()
 
-
-                #TODO I'm not sure what to do because the embedding are not the same size
                 theRebbe.addParagraphEmbedings(model,{id:enncoding.detach().numpy()})
-                # save the dataframe every time we generate 1000 more embeddings so that we don't have to restart completely if we stop in middle
-#                 if(counter % 1000 == 0):
-#                     print(counter)
-
-                #if(counter % 5000 == 0 and counter != startValue and counter != 0):
-                    # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-#                     theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
+              
                 counter += 1
                 
                 if counter == end:
@@ -331,8 +316,7 @@ class manager:
         all_info = theRebbe.getParagraph(paragraphID)
         doc_id = all_info[2]
         searchMe = self.paragraphs_df.copy()
-        # print(searchMe)
-        # time.sleep(1)
+       
         #  dropped is an int representing how many paragraphs were part of the same document as the original paragraph 
         #  and are therefore not included in the search for similar paragraphs
         global dropped
@@ -402,7 +386,6 @@ class manager:
         print(theRebbe.paragraphs_df)
         theRebbe.exportDataFrame("all_paragraphs_final"+model+".pkt")
            
-        # theRebbe.paragraphs_df.to_csv("local_ids.csv")
 
 # Create a Test Manager Class
 model = "2alephbert-base-finetuned"
@@ -429,43 +412,17 @@ theRebbe.loadDataFrame("documents_250+250_"+model+".pkt")
 # print(theRebbe.paragraphs_df.shape)
 # #theRebbe.combine_files(directory)
 # theRebbe.addModel(model,duplicates='discard')
-# start = 0
-# end = 26801
-# theRebbe.addModel(model)
-# theRebbe.generate_embeddings("documents_250+250_",model, 0, 5360)
-# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings("documents_250+250_",model, 5361, 10720)
-# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings("documents_250+250_",model, 10721, 16080)
-# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings("documents_250+250_",model, 16081, 21440)
-# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
-# theRebbe.generate_embeddings("documents_250+250_",model, 21441, 26801)
-# theRebbe.exportDataFrame("documents_250+250_"+model+".pkt")
 
-# print(theRebbe.paragraphs_df)
-# theRebbe.exportCSV("250+250_1aph.csv")
-# model = "1AlphaBert"
+
 # x = 0
 # before = time.time()
-# num_of_searches = 6
+# num_of_searches = 30
 # while x < num_of_searches:
-    
+#     # theRebbe.loadDataFrame(dataframe)
 #     results1 = theRebbe.search(model,x,10)
-#     theRebbe.createPDF(results1, f"documents_250+250_{model}_find10_"+str(x)+".pdf")
+#     theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
+#     # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
 #     x+=1
-# end = 100_000
-# theRebbe.generate_embeddings("documents_250+250",model, start, end)
-
-x = 0
-before = time.time()
-num_of_searches = 30
-while x < num_of_searches:
-    # theRebbe.loadDataFrame(dataframe)
-    results1 = theRebbe.search(model,x,10)
-    theRebbe.createPDF(results1, f"documents_250+250_final{model}_find10_"+str(x)+".pdf")
-    # results1.to_csv(str(x)+"_take_2_all_paragraphs_final"+model+"_find10.csv")
-    x+=1
 
 # after = time.time()
 # print((after - before)/num_of_searches)
