@@ -58,7 +58,8 @@ def insert_random_mask(batch):
     return {"masked_" + k: v.numpy() for k, v in masked_inputs.items()}
 
 # the name of our file was test1.csv - replace this name with the name of your file
-data_files = {"train": "test_1.csv"}
+fileName = "test_1.csv"
+data_files = {"train": fileName}
 test_set = load_dataset("csv", data_files=data_files)
 # get rid of any wierd text in our shut that would confuse the model
 test_set = test_set.map(lambda x: {"paragraph_text": html.unescape(x["paragraph_text"])})
