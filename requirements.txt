@@ -1,0 +1,9 @@
+numpy
+pandas
+datasets
+huggingface_hub
+torch
+transformers
+accelerate
+tqdm
+fpdf
