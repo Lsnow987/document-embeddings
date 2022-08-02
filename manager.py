@@ -408,12 +408,11 @@ class manager:
            
         # theRebbe.paragraphs_df.to_csv("local_ids.csv")
 
-
 # Create a Test Manager Class
-theRebbe = manager()
 model = "2alephbert-base-finetuned"
 dataframe = "documents_250+250_1AlphaBert.pkt"
 directory = "/home/jacob/code/responaProjectReccomender/Data/"
+theRebbe = manager()
 theRebbe.loadDataFrame("documents_250+250_"+model+".pkt")
 # theRebbe.exportCSV("250+250.csv")
 
