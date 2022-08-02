@@ -46,8 +46,8 @@ There are two main files, which are used for this project.
 
 
 
-* Fine_tuning.py, which is used to train BERT Models, using the hugging face framework. 
-* Manager.py, which contains a manger class, which is used to handle the data, and perform searches
+* fine_tuning.py, which is used to train BERT Models, using the hugging face framework. 
+* manager.py, which contains a manger class, which is used to handle the data, and perform searches
 
 # How to get things running:
 
@@ -75,7 +75,7 @@ Notes:
 
 On line 25 model_checkpoint is set to the name of the pretrained model that is being fine-tuned.
 
-Line 23 (notebook_login()) will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: 
+Line 23 ('notebook_login()') will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: 
 
 [User access tokens (huggingface.co)](https://huggingface.co/docs/hub/security-tokens). An account is required to make an access token.
 
