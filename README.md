@@ -57,13 +57,11 @@ To install all dependencies required run pip3 install -r requirements.txt
 
 ## Generating Dataframe
 
-
-
-    * Make sure that all the text is stored using ‘cp1255’ encoding, and all document names are valid integers, and stored in the same folder.
-    *  The manager.py contains 3 different methods of generating dataframes:
-        * Generate_datafrane_standard: each paragraph is its own row
-        * calling generate_dataframe_per_document: each document will be its own row:  The text that will be stored for each document are the first 250 words and last 250 words in the document
-        * Generate_dataframe_per_100:  where each row will consist of 100 words, this is useful when the BERT model being used as a max size of 128 tokens. 
+Make sure that all the text is stored using ‘cp1255’ encoding, and all document names are valid integers, and stored in the same folder.
+The manager.py contains 3 different methods of generating dataframes:
+1. Generate_datafrane_standard: each paragraph is its own row
+2. calling generate_dataframe_per_document: each document will be its own row:  The text that will be stored for each document are the first 250 words and last 250 words in the document
+3. Generate_dataframe_per_100:  where each row will consist of 100 words, this is useful when the BERT model being used as a max size of 128 tokens. 
 
 After generating the dataframe, it can be exported to a .pkt file by calling theRebbe.exportDataFrame(filePath), where theRebbe is an instance of the manager class and filePath is the path to where the file should be stored along with the name ending in .pkt. It can also be exported to a .csv file, which will be helpful for running fineTuning.py, by calling theRebbe.exportCSV(filePath) in the same way. 
 
