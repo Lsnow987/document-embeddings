@@ -117,15 +117,11 @@ class manager:
     def createPDF(self, distances, filename):
 
         pdf = fpdf.FPDF()
-        # pdf.set_font("Arial", size=12)
         pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
         pdf.set_font('DejaVu', '', 14)
-        # print(distances)
         for row in distances.index:
-            # print(type(row))
             pdf.add_page()
             currId = row
-            
             
             if(row > first_id):
                 currId = row + dropped
@@ -199,16 +195,16 @@ class manager:
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
 
-        count = 1
+#         count = 1
         fileNames.sort()
         for fileName in fileNames:
             f = open(directory + fileName, "rb")
             text = f.read()
             full_text = text.decode("cp1255", errors="ignore")
 
-            if(count % 100 == 0):
-                print("Processing Document: " + str(count))
-            count += 1
+#             if(count % 100 == 0):
+#                 print("Processing Document: " + str(count))
+#             count += 1
 
             # length_of_doc = len(full_text)
             #  we noticed that in all the tshuvos paragraphs are seperated by @ signs 
@@ -236,16 +232,16 @@ class manager:
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
 
-        count = 1
+#         count = 1
         fileNames.sort()
         for fileName in fileNames:
             f = open(directory + fileName, "rb")
             text = f.read()
             full_text = text.decode("cp1255", errors="ignore")
 
-            if(count % 100 == 0):
-                print("Processing Document: " + str(count))
-            count += 1
+#             if(count % 100 == 0):
+#                 print("Processing Document: " + str(count))
+#             count += 1
 
             # length_of_doc = len(full_text)
             full_text = full_text.replace("@", "").replace("/", "")
@@ -264,16 +260,16 @@ class manager:
         # "/zooper2/jacob.khalili/docEmbeddings/Data/"
         fileNames = os.listdir(directory)
 
-        count = 1
+#         count = 1
         fileNames.sort()
         for fileName in fileNames:
             f = open(directory + fileName, "rb")
             text = f.read()
             full_text = text.decode("cp1255", errors="ignore")
 
-            if(count % 100 == 0):
-                print("Processing Document: " + str(count))
-            count += 1
+#             if(count % 100 == 0):
+#                 print("Processing Document: " + str(count))
+#             count += 1
 
             # length_of_doc = len(full_text)
             full_text = full_text.replace("@", "").replace("/", "")
@@ -310,16 +306,16 @@ class manager:
                 #TODO I'm not sure what to do because the embedding are not the same size
                 theRebbe.addParagraphEmbedings(model,{id:enncoding.detach().numpy()})
                 # save the dataframe every time we generate 1000 more embeddings so that we don't have to restart completely if we stop in middle
-                if(counter % 1000 == 0):
-                    print(counter)
+#                 if(counter % 1000 == 0):
+#                     print(counter)
 
                 #if(counter % 5000 == 0 and counter != startValue and counter != 0):
                     # theRebbe.exportCSV("all_paragraphs_final"+model+".csv")
-                    theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
+#                     theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
                 counter += 1
                 
                 if counter == end:
-                    theRebbe.exportCSV(prefix+"all_paragraphs_final"+model+".csv")
+#                     theRebbe.exportCSV(prefix+"all_paragraphs_final"+model+".csv")
                     theRebbe.exportDataFrame(prefix+"all_paragraphs_final"+model+".pkt")
                     break
 
