@@ -77,9 +77,7 @@ Notes:
 
 On line 25 model_checkpoint is set to the name of the pretrained model that is being fine-tuned.
 
-Line 23 (notebook_login()) will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: 
-
-[User access tokens (huggingface.co)](https://huggingface.co/docs/hub/security-tokens). An account is required to make an access token.
+Line 23 (notebook_login()) will make a prompt on the screen asking for an access token to hugging face hub. The instruction for how to generate an access token can be found here: [User access tokens (huggingface.co)](https://huggingface.co/docs/hub/security-tokens). An account is required to make an access token.
 
 Once all of the data is stored in a csv file, fileName on line 61 must be set to the name of the csv file.
 
