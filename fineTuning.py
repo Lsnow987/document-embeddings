@@ -79,8 +79,9 @@ data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probabi
 
 # we did an 85 to 15 train/test split
 # change this number to the number of rows that come out depending on your chunk_size
-train_size = math.floor(471891*.85) # change for actual amount
-test_size = math.floor(471891*.15)
+size_of_dataset = 471891 # change for actual amount
+train_size = math.floor(size_of_dataset*.85) 
+test_size = math.floor(size_of_dataset*.15)
 
 full_dataset = lm_datasets["train"].train_test_split(
     train_size=train_size, test_size=test_size, seed=42
