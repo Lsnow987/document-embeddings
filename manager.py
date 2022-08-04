@@ -324,10 +324,11 @@ class manager:
         
 #         as an optimization we presume that there won't be more than 20 paragraphs either
 #         before or after the paragraph being searched for in the same document.
-        starting = paragraphID - 20
+        area = 20
+        starting = paragraphID - area
         if starting < 0:
             starting = 0
-        ending = paragraphID + 20
+        ending = paragraphID + area
         
         for index, row in tqdm(islice(searchMe.iterrows(), starting, ending)):
             if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
