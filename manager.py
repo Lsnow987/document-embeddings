@@ -321,7 +321,15 @@ class manager:
         #  and are therefore not included in the search for similar paragraphs
         global dropped
         dropped = 0
-        for index, row in searchMe.iterrows():
+        
+#         as an optimization we presume that there won't be more than 20 paragraphs either
+#         before or after the paragraph being searched for in the same document.
+        starting = paragraphID - 20
+        if starting < 0:
+            starting = 0
+        ending = paragraphID + 20
+        
+        for index, row in tqdm(islice(searchMe.iterrows(), starting, ending)):
             if(row['document_id'] == doc_id and row['paragraph_id'] != paragraphID):
                 searchMe.drop(index, inplace=True, axis='index')
                 dropped += 1
