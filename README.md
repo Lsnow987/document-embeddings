@@ -24,6 +24,10 @@ Conversion notes:
 
 A tool for finding similar and related rabbinic responsa. 
 
+Developed by: [Jacob Khalili](https://www.linkedin.com/in/jacobkhalili/), and [Lawrence Snow](https://www.linkedin.com/in/lawrence-snow-059629203/)
+
+Mentor: [Professor Jonathan Schler](https://www.linkedin.com/in/schler/?originalSubdomain=il) 
+
 # What are Responsa?
 
 Responsa are one of the cornerstones of modern halachic (Jewish Law) literature. Careful learning, analysis and understandings of these scholarly letters inform not only the recipient on how they are to act, but establish important halachic precedence and principles used to decide complex questions for future generations.
