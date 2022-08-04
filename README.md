@@ -104,6 +104,8 @@ In order to convert the search results into a pdf containing hebrew text we used
 
 This information can be turned into a pdf by calling `theRebbe.createPDF(distances, filename)`. Distances are the results received from running the search. Filename is the directory where the file should be stored and what the filename should be when the pdf is saved.
 
+Paragraphs that were part of the same doucment that the search was being done with were not included in the search. In order to exclude them a search was done on forty paragraphs surrounding it to check if they were part of the same document. This number should potentially be made smaller to optimize the code, as this search takes a few seconds even when just looking at 40 documents. The number 20 on line 326 should be changed to whatever is deemed fit.
+
 # Next Steps:
 
 
