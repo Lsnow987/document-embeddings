@@ -114,7 +114,7 @@ class manager:
     # given that we are dealing with hebrew not all fonts worked - we used the DejaVuSansCondensed
     # font. that ttf file for that font is on our github. you must replace DejaVuSansCondensed.ttf
     # on line 20 with the path to where the font is saved unless you have it saved in the same directory as your code
-    def createPDF(self, distances, filename):
+    def createPDF(self, distances, filename, two50):
 
         pdf = fpdf.FPDF()
         pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
@@ -129,12 +129,10 @@ class manager:
             getParagraph = self.getParagraph(currId)
             doc_Id = getParagraph['document_id']
 
-            # comment out if doing search by 250 first and 250 last tokens of a document and uncomment
-            # out if doing search by paragraph in order not to have paragraphs of the same document
-            # show up in your search results
-            if(doc_Id == first_doc_id):
-                local_id = getParagraph["localParagraphId"]
-                currId = (currId + first_id - local_id)
+            if(two_50): 
+                if(doc_Id == first_doc_id):
+                    local_id = getParagraph["localParagraphId"]
+                    currId = (currId + first_id - local_id)
 
             pdf.cell(200, 10, txt=f"Paragraph ID: {currId}", ln=1, align="C")
             pdf.ln()
@@ -144,8 +142,7 @@ class manager:
             pdf.cell(200, 10, txt=f"Doc ID: {doc_Id}", ln=1, align="C")
             pdf.ln() 
 
-            # since we are dealing with hebrew the way the text was represented was very messed up so we had 
-            # do a few tricks to represent the text nicely in a way that as correct for hebrew           
+            # Correction for Hebrew text R->L, and ecnciding problems          
             text = self.getParagraph(currId)[1].encode('cp1255',errors='replace').decode('cp1255',errors='replace')
             text = text[::-1]
             text = text.split()
@@ -171,11 +168,11 @@ class manager:
             new_line = " ".join(new_line)
             pdf.cell(0, 10, txt=new_line, align="R")
             pdf.ln()
-        # right now the pdf outputs to the directory where the code is - if you want to output it to a specific directory
-        # you will have to include that in the next line
+      
         pdf.output(filename, "F")
+        
         print("PDF Created")
-        return "distances.pdf"
+        return filename
 
     # in order to use the responsa data to fine tune the bert model we had to combine all of the sheilos utshuvos into one dataframe
     # we do this in three different ways. I will explain eah way in its proper place.
